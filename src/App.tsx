@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,27 +19,29 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/storage-map" element={<StorageMap />} />
-            <Route path="/import-export" element={<ImportExport />} />
-            {/* Add placeholder routes for other navigation items */}
-            <Route path="/categories" element={<NotFound />} />
-            <Route path="/analytics" element={<NotFound />} />
-            <Route path="/settings" element={<NotFound />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/storage-map" element={<StorageMap />} />
+              <Route path="/import-export" element={<ImportExport />} />
+              {/* Add placeholder routes for other navigation items */}
+              <Route path="/categories" element={<NotFound />} />
+              <Route path="/analytics" element={<NotFound />} />
+              <Route path="/settings" element={<NotFound />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster />
+        <Sonner />
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
