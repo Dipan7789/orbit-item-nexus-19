@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Layout
 import Layout from "./components/layout/Layout";
@@ -16,16 +16,41 @@ import StorageMap from "./pages/StorageMap";
 import ImportExport from "./pages/ImportExport";
 import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
+import SignIn from "./pages/auth/SignIn";
+import SignUp from "./pages/auth/SignUp";
+
+// Auth Provider
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
+// Protected route component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" replace />;
+  }
+  
+  return children;
+};
+
 const App = () => (
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            {/* Auth routes */}
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            
+            {/* Protected app routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
               <Route index element={<Dashboard />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/storage-map" element={<StorageMap />} />
@@ -41,8 +66,8 @@ const App = () => (
         <Toaster />
         <Sonner />
       </TooltipProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 export default App;
