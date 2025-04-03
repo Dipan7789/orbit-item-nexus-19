@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import StorageMap from "./pages/StorageMap";
 import ImportExport from "./pages/ImportExport";
+import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,8 +30,8 @@ const App = () => (
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/storage-map" element={<StorageMap />} />
               <Route path="/import-export" element={<ImportExport />} />
+              <Route path="/categories" element={<Categories />} />
               {/* Add placeholder routes for other navigation items */}
-              <Route path="/categories" element={<NotFound />} />
               <Route path="/analytics" element={<NotFound />} />
               <Route path="/settings" element={<NotFound />} />
             </Route>
