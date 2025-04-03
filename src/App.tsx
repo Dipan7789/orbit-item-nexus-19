@@ -15,6 +15,7 @@ import Inventory from "./pages/Inventory";
 import StorageMap from "./pages/StorageMap";
 import ImportExport from "./pages/ImportExport";
 import Categories from "./pages/Categories";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
@@ -22,6 +23,7 @@ import SignUp from "./pages/auth/SignUp";
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
+// Create a client
 const queryClient = new QueryClient();
 
 // Protected route component
@@ -35,39 +37,42 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Auth routes */}
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            
-            {/* Protected app routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/storage-map" element={<StorageMap />} />
-              <Route path="/import-export" element={<ImportExport />} />
-              <Route path="/categories" element={<Categories />} />
-              {/* Add placeholder routes for other navigation items */}
-              <Route path="/analytics" element={<NotFound />} />
-              <Route path="/settings" element={<NotFound />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Auth routes */}
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
+                
+                {/* Protected app routes */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Dashboard />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/storage-map" element={<StorageMap />} />
+                  <Route path="/import-export" element={<ImportExport />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/settings" element={<NotFound />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;
