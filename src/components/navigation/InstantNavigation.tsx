@@ -107,8 +107,7 @@ const InstantNavigation: React.FC<InstantNavigationProps> = ({ onNavigate }) => 
               <SelectValue placeholder="Quick select" />
             </SelectTrigger>
             <SelectContent>
-              {/* Fixed: Changed empty string to "all" */}
-              <SelectItem value="all">Select location</SelectItem>
+              <SelectItem value="">Select location</SelectItem>
               {locations.map((location) => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}

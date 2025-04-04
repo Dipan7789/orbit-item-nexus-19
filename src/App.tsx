@@ -68,41 +68,39 @@ const App = () => {
         <AuthProvider>
           <ThemeProvider>
             <TooltipProvider>
-              <div className="w-full min-h-screen">
-                <Routes>
-                  {/* Auth routes */}
-                  <Route path="/signin" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
+              <Routes>
+                {/* Auth routes */}
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
+                
+                {/* Protected app routes */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Dashboard />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/storage-map" element={<StorageMap />} />
+                  <Route path="/import-export" element={<ImportExport />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/iss-guidelines" element={<IssGuidelines />} />
+                  <Route path="/settings" element={<Settings />} />
                   
-                  {/* Protected app routes */}
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }>
-                    <Route index element={<Dashboard />} />
-                    <Route path="/inventory" element={<Inventory />} />
-                    <Route path="/storage-map" element={<StorageMap />} />
-                    <Route path="/import-export" element={<ImportExport />} />
-                    <Route path="/categories" element={<Categories />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/iss-guidelines" element={<IssGuidelines />} />
-                    <Route path="/settings" element={<Settings />} />
-                    
-                    {/* Doraemon-inspired Feature Routes - Implemented */}
-                    <Route path="/instant-navigation" element={<InstantNavigation />} />
-                    <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
-                    <Route path="/smart-tagging" element={<SmartTagging />} />
-                    
-                    {/* Future Feature Routes */}
-                    <Route path="/zoomable-view" element={<ZoomableView />} />
-                    <Route path="/translator" element={<Translator />} />
-                    <Route path="/transfer-assistant" element={<TransferAssistant />} />
-                    <Route path="/event-predictor" element={<EventPredictor />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
+                  {/* Doraemon-inspired Feature Routes - Implemented */}
+                  <Route path="/instant-navigation" element={<InstantNavigation />} />
+                  <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
+                  <Route path="/smart-tagging" element={<SmartTagging />} />
+                  
+                  {/* Future Feature Routes */}
+                  <Route path="/zoomable-view" element={<ZoomableView />} />
+                  <Route path="/translator" element={<Translator />} />
+                  <Route path="/transfer-assistant" element={<TransferAssistant />} />
+                  <Route path="/event-predictor" element={<EventPredictor />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
               <Toaster />
               <Sonner />
             </TooltipProvider>

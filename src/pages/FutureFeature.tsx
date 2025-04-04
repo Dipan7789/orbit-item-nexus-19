@@ -1,61 +1,89 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import TiltEffect from '@/components/ui/tilt-effect';
-import { useNavigate } from 'react-router-dom';
+import { AlertCircle, ConstructionIcon, Rocket } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 interface FutureFeatureProps {
   feature: string;
-  featureDescription: string;
 }
 
-const FutureFeature: React.FC<FutureFeatureProps> = ({ feature, featureDescription }) => {
-  const [mounted, setMounted] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+const FutureFeature: React.FC<FutureFeatureProps> = ({ feature }) => {
+  const getFeatureDescription = (featureName: string) => {
+    const descriptions: Record<string, string> = {
+      "Instant Navigation Panel": "Jump to any ISS module on the 3D map instantly, like the 'Anywhere Door'.",
+      "Spoilage Simulation System": "Visually predict item degradation and expiry over time with 'Time Cloth' technology.",
+      "Smart Tagging Tool": "Add custom voice/text notes to containers or items with 'Memory Bread' technology.",
+      "Zoomable 3D View": "Explore inventory at different scales with 'Small Light/Big Light' technology.",
+      "Multilingual Translator Layer": "Real-time language translation of item names with 'Translator Jelly' technology.",
+      "Visual Item Transfer Assistant": "Animated tracking of goods between ISS sections with 'Take-copter' technology.",
+      "Space Event Predictor": "Intelligent space weather and anomaly prediction system using predictive AI models."
+    };
+    
+    return descriptions[featureName] || "Coming soon...";
+  };
 
   return (
-    <div className={`container mx-auto max-w-6xl p-4 sm:p-6 md:p-8 h-full flex items-center justify-center ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-      <TiltEffect maxTilt={5} scale={1.01} className="w-full max-w-2xl">
-        <Card className="w-full border-white/10 bg-card/90 backdrop-blur-sm futuristic-border">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
-              {feature}
-            </CardTitle>
-            <CardDescription className="mt-2 text-base md:text-lg">
-              {featureDescription}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="relative h-48 md:h-64 rounded-lg overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 animate-pulse"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-lg md:text-xl font-semibold text-muted-foreground">
-                  Coming Soon
-                </div>
-              </div>
-            </div>
-            
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground">
-                We're working hard to bring this exciting feature to you. Stay tuned!
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">{feature}</h1>
+        <p className="text-muted-foreground mt-1">{getFeatureDescription(feature)}</p>
+      </div>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>{feature}</CardTitle>
+            <span className="bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-500 px-2 py-1 rounded-md text-xs font-semibold">
+              Coming Soon
+            </span>
+          </div>
+          <CardDescription>
+            This feature is currently under development and will be available in a future update.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-center h-64 rounded-md bg-muted/50">
+            <div className="text-center">
+              <Rocket className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Feature In Development</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Our team is working hard to bring this exciting feature to life. 
+                Check back soon for updates!
               </p>
-              <TiltEffect maxTilt={8}>
-                <Button 
-                  onClick={() => navigate(-1)} 
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 glow-effect"
-                >
-                  Go Back
-                </Button>
-              </TiltEffect>
             </div>
-          </CardContent>
-        </Card>
-      </TiltEffect>
+          </div>
+
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Development Preview</AlertTitle>
+            <AlertDescription>
+              This is a preview of the {feature} that is coming soon to the ISS Management System.
+            </AlertDescription>
+          </Alert>
+
+          <div className="flex justify-between">
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Button variant="outline">Learn More</Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold">{feature}</h4>
+                  <p className="text-xs">
+                    {getFeatureDescription(feature)} This futuristic technology will revolutionize
+                    how astronauts manage resources on the International Space Station.
+                  </p>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+            
+            <Button variant="secondary" disabled>Early Access Waitlist</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
