@@ -1,124 +1,129 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IssViewer } from '@/components/iss/IssViewer';
 import { SpaceMap } from '@/components/iss/SpaceMap';
-import IssDoraemonFeatures from '@/components/iss/IssDoraemonFeatures';
-import { useIsMobile } from '@/hooks/use-mobile';
+import IssAdvancedFeatures from '@/components/iss/IssDoraemonFeatures';
 
 const IssGuidelines = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const isMobile = useIsMobile();
-
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">ISS Guidelines</h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore the International Space Station and its guidelines</p>
+        <h1 className="text-3xl font-bold">ISS Guidelines & Resources</h1>
+        <p className="text-muted-foreground mt-1">
+          Explore the International Space Station and learn about its inventory management systems
+        </p>
       </div>
-
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="overflow-x-auto w-full justify-start space-x-1 md:space-x-2 py-1 md:py-2 px-0.5 md:px-1 text-xs md:text-sm">
-          <TabsTrigger value="overview" className="hover:text-primary-foreground transition-colors">Overview</TabsTrigger>
-          <TabsTrigger value="3d-model" className="hover:text-primary-foreground transition-colors">3D ISS Model</TabsTrigger>
-          <TabsTrigger value="space-map" className="hover:text-primary-foreground transition-colors">Space Map</TabsTrigger>
-          <TabsTrigger value="guidelines" className="hover:text-primary-foreground transition-colors">Guidelines</TabsTrigger>
-          <TabsTrigger value="future-features" className="hover:text-primary-foreground transition-colors">Future Features</TabsTrigger>
+      
+      <Tabs defaultValue="overview">
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="station-view">Station View</TabsTrigger>
+          <TabsTrigger value="location-map">Location Map</TabsTrigger>
+          <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
-              <CardTitle>International Space Station</CardTitle>
+        <TabsContent value="overview" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>International Space Station Overview</CardTitle>
               <CardDescription>
-                Overview of the ISS and its mission
+                Guide to ISS inventory management protocols and best practices
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 p-4 md:p-6">
-              <div className="aspect-video rounded-md overflow-hidden">
-                <img 
-                  src="https://www.nasa.gov/wp-content/uploads/2023/03/iss068e024412.jpg" 
-                  alt="International Space Station" 
-                  className="w-full h-full object-cover"
-                />
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-2">ISS Inventory System</h3>
+                <p className="text-muted-foreground">
+                  The International Space Station inventory system is designed to track thousands of items in a microgravity environment across multiple modules. This system ensures astronauts can quickly locate critical supplies and equipment while maintaining optimal storage efficiency.
+                </p>
               </div>
               
-              <div className="prose dark:prose-invert max-w-none text-sm md:text-base">
-                <p>
-                  The International Space Station (ISS) is a modular space station in low Earth orbit. 
-                  It's a multinational collaborative project involving five space agencies: NASA (United States), 
-                  Roscosmos (Russia), JAXA (Japan), ESA (Europe), and CSA (Canada).
-                </p>
-                <p>
-                  The station serves as a microgravity and space environment research laboratory in which 
-                  scientific research is conducted in astrobiology, astronomy, meteorology, physics, and other fields.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Key Features</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Real-time tracking of over 10,000 inventory items</li>
+                    <li>Barcode and RFID identification systems</li>
+                    <li>Prioritization of critical supplies and equipment</li>
+                    <li>Expiration date monitoring for consumables</li>
+                    <li>Integration with NASA's ground-based inventory database</li>
+                  </ul>
+                </div>
                 
-                <h3 className="text-lg md:text-xl">Key Facts</h3>
-                <ul className="text-sm md:text-base">
-                  <li>Orbit altitude: 400 km (250 mi)</li>
-                  <li>Speed: 28,000 km/h (17,500 mph)</li>
-                  <li>Orbits per day: 15.5</li>
-                  <li>Mass: 460,000 kg (1,014,000 lb)</li>
-                  <li>Length: 109 m (358 ft)</li>
-                  <li>Width: 73 m (240 ft)</li>
-                  <li>Pressurized volume: 915 m³ (32,300 cu ft)</li>
-                </ul>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Storage Guidelines</h4>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Critical medical supplies must be stored in Module A</li>
+                    <li>Food items should be organized by expiration date</li>
+                    <li>Scientific samples require temperature-controlled storage</li>
+                    <li>Personal items are limited to defined crew storage areas</li>
+                    <li>Hazardous materials must follow special containment protocols</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle>Crew Information</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Inventory Protocol</CardTitle>
+                <CardDescription>Standard procedures for item management</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  The ISS typically maintains a crew of six astronauts who live and work in the station 
-                  for missions lasting several months.
-                </p>
-                <Separator className="my-4" />
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Current Crew:</span>
-                    <span>7 astronauts</span>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Item Retrieval</h4>
+                    <p className="text-sm text-muted-foreground">
+                      All items must be logged when removed from storage. Use the barcode scanner to update the inventory system before removing any item from its designated location.
+                    </p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Mission Duration:</span>
-                    <span>6 months (typical)</span>
+                  
+                  <div>
+                    <h4 className="font-medium">Item Return</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Return items to their designated storage locations after use. If an item needs to be relocated, update the inventory system immediately.
+                    </p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Sleep Cycle:</span>
-                    <span>8 hours / 24-hour period</span>
+                  
+                  <div>
+                    <h4 className="font-medium">New Item Registration</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Items arriving on resupply missions must be registered within 24 hours of arrival. Follow the import procedure in the inventory system.
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle>Storage Requirements</CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle>Emergency Procedures</CardTitle>
+                <CardDescription>Critical item access during emergencies</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Efficient storage is critical for mission success, as space is extremely limited 
-                  on the station.
-                </p>
-                <Separator className="my-4" />
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Personal Storage:</span>
-                    <span>0.5 m³ per astronaut</span>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Medical Emergencies</h4>
+                    <p className="text-sm text-muted-foreground">
+                      The emergency medical kit is located in Module A, Cabinet 3. In case of medical emergency, this cabinet can be accessed without inventory logging.
+                    </p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Regular Resupply:</span>
-                    <span>Every 2-3 months</span>
+                  
+                  <div>
+                    <h4 className="font-medium">Station Emergencies</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Emergency repair kits are located in each module. In emergency situations, use the "Emergency Access" feature in the inventory system to quickly locate needed equipment.
+                    </p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Waste Management:</span>
-                    <span>Compact &amp; Return to Earth</span>
+                  
+                  <div>
+                    <h4 className="font-medium">Communication Failure</h4>
+                    <p className="text-sm text-muted-foreground">
+                      If the inventory system is unavailable, use the physical backup inventory logs stored in the Commander's quarters.
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -126,109 +131,36 @@ const IssGuidelines = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="3d-model">
-          <Card className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div className="h-[50vh] md:h-[80vh] w-full">
-                <IssViewer />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="space-map">
-          <Card className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div className="h-[50vh] md:h-[80vh] w-full">
-                <SpaceMap />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="guidelines" className="space-y-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
-              <CardTitle>ISS Storage Guidelines</CardTitle>
+        <TabsContent value="station-view">
+          <Card className="h-[calc(100vh-220px)] min-h-[500px]">
+            <CardHeader>
+              <CardTitle>Interactive ISS Model</CardTitle>
               <CardDescription>
-                Proper storage procedures for the International Space Station
+                Explore the International Space Station in 3D
               </CardDescription>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none text-sm md:text-base p-4 md:p-6">
-              <h3>General Storage Principles</h3>
-              <p>
-                All items aboard the ISS must be properly secured at all times. In microgravity, 
-                unsecured items can float away, become lost, or pose hazards to equipment and crew.
-              </p>
-              
-              <h3>Storage Procedures</h3>
-              <ol>
-                <li>
-                  <strong>Inventory Tracking:</strong> All items must be scanned and recorded in the 
-                  inventory management system before storage or retrieval.
-                </li>
-                <li>
-                  <strong>Labeling:</strong> Items must be clearly labeled with contents, expiration date (if applicable), 
-                  and hazard information (if applicable).
-                </li>
-                <li>
-                  <strong>Location Coding:</strong> Store items according to the ISS location coding system. 
-                  (Example: NODE2F3B = Node 2, Forward, Panel 3, Bay B)
-                </li>
-                <li>
-                  <strong>Weight Distribution:</strong> Distribute heavy items throughout storage areas to 
-                  maintain proper balance of the station.
-                </li>
-                <li>
-                  <strong>Containment:</strong> Items that generate debris, liquids, or gases must be double-contained.
-                </li>
-              </ol>
-              
-              <h3>Storage Priorities</h3>
-              <ul>
-                <li>
-                  <strong>High Priority:</strong> Critical life support, emergency equipment, and time-sensitive experiments.
-                </li>
-                <li>
-                  <strong>Medium Priority:</strong> Regular consumables, maintenance equipment, and scientific equipment.
-                </li>
-                <li>
-                  <strong>Low Priority:</strong> Non-essential personal items, archived materials, and return cargo.
-                </li>
-              </ul>
-              
-              <h3>Hazardous Materials</h3>
-              <p>
-                Hazardous materials must be stored in designated containment areas with proper ventilation 
-                and emergency response equipment nearby. Each hazardous item must have a Material Safety Data Sheet 
-                (MSDS) accessible in the inventory system.
-              </p>
-              
-              <h3>Food Storage</h3>
-              <p>
-                Food items must be stored according to their shelf life:
-              </p>
-              <ul>
-                <li>Short shelf life (1-2 weeks): Refrigerated or immediate use</li>
-                <li>Medium shelf life (1-6 months): Ready access storage</li>
-                <li>Long shelf life (6+ months): Deep storage</li>
-              </ul>
+            <CardContent className="p-0 h-[calc(100%-76px)]">
+              <IssViewer />
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="future-features">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
-              <CardTitle>Future ISS Management Enhancements</CardTitle>
+        <TabsContent value="location-map">
+          <Card className="h-[calc(100vh-220px)] min-h-[500px]">
+            <CardHeader>
+              <CardTitle>ISS Orbit Tracker</CardTitle>
               <CardDescription>
-                Advanced features planned for future implementation to enhance ISS operations
+                Monitor the current position and trajectory of the ISS
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              <IssDoraemonFeatures />
+            <CardContent className="p-0 h-[calc(100%-76px)]">
+              <SpaceMap />
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="advanced-features">
+          <IssAdvancedFeatures />
         </TabsContent>
       </Tabs>
     </div>

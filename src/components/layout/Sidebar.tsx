@@ -20,7 +20,8 @@ import {
   Globe,
   Send,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -42,152 +43,144 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const mainFeatures = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { name: 'Inventory', icon: Package, path: '/inventory' },
-    { name: 'Storage Map', icon: Boxes, path: '/storage-map' },
-    { name: 'ISS Guidelines', icon: Satellite, path: '/iss-guidelines' },
-  ];
-
-  const implementedFeatures = [
-    { name: 'Instant Navigation', icon: Navigation, path: '/instant-navigation' },
-    { name: 'Spoilage Simulation', icon: Clock, path: '/spoilage-simulation' },
-    { name: 'Smart Tagging', icon: MessageSquare, path: '/smart-tagging' },
-  ];
-
-  const futureFeatures = [
-    { name: 'Zoomable 3D View', icon: ZoomIn, path: '/zoomable-view' },
-    { name: 'Multilingual Translator', icon: Globe, path: '/translator' },
-    { name: 'Item Transfer Assistant', icon: Send, path: '/transfer-assistant' },
-    { name: 'Space Event Predictor', icon: AlertTriangle, path: '/event-predictor' },
-  ];
-
-  const utilityFeatures = [
-    { name: 'Categories', icon: Tags, path: '/categories' },
+    { name: 'Storage Map', icon: MapPin, path: '/storage-map' },
     { name: 'Import/Export', icon: Upload, path: '/import-export' },
+    { name: 'Categories', icon: Tags, path: '/categories' },
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+  ];
+
+  // Advanced features (previously Doraemon features, now renamed appropriately)
+  const advancedFeatures = [
+    { name: 'ISS Guidelines', icon: Satellite, path: '/iss-guidelines' },
+    { name: 'Quick Navigation', icon: Navigation, path: '/instant-navigation', status: 'available' },
+    { name: 'Expiry Forecasting', icon: Clock, path: '/spoilage-simulation', status: 'dev' },
+    { name: 'Smart Tagging', icon: Tags, path: '/smart-tagging', status: 'dev' },
+    { name: 'Zoomable View', icon: ZoomIn, path: '/zoomable-view', status: 'planned' },
+    { name: 'Translator', icon: Globe, path: '/translator', status: 'planned' },
+    { name: 'Transfer Assistant', icon: Send, path: '/transfer-assistant', status: 'planned' },
+    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'planned' },
   ];
 
   return (
-    <div
-      className={cn(
-        "border-r bg-background flex-col fixed inset-y-0 z-30 transition-all",
-        isCollapsed ? "w-16" : "w-64",
-        isMobile && isCollapsed ? "hidden" : "flex",
-        !isMobile && "md:flex"
-      )}
-    >
-      <div className="flex h-16 items-center border-b px-4">
-        {isCollapsed ? (
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
-            O
-          </div>
-        ) : (
-          <div className="font-semibold tracking-tight">Orbit Item Nexus</div>
+    <aside className={cn(
+      'flex flex-col h-full bg-background border-r',
+      isCollapsed ? 'w-20' : 'w-64'
+    )}>
+      <div className={cn(
+        'h-16 flex items-center px-4 border-b',
+        isCollapsed ? 'justify-center' : 'justify-between'
+      )}>
+        {!isCollapsed && (
+          <div className="font-semibold text-lg">ISS Inventory</div>
+        )}
+        {isCollapsed && (
+          <div className="font-semibold text-lg">ISS</div>
         )}
       </div>
       
       <ScrollArea className="flex-1">
-        <div className="px-2 py-4">
+        <nav className="px-2 py-4">
           <div className="space-y-1">
-            <div className={cn("px-2 mb-1", isCollapsed ? "sr-only" : "")}>
-              <h3 className="text-xs font-medium text-muted-foreground">Main</h3>
-            </div>
-            {mainFeatures.map((feature) => (
-              <NavLink to={feature.path} key={feature.path}>
-                <Button
-                  variant={isActiveRoute(feature.path) ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start",
-                    isCollapsed && "justify-center px-0"
-                  )}
-                  size={isCollapsed ? "icon" : "default"}
-                >
-                  <feature.icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
-                  {!isCollapsed && <span>{feature.name}</span>}
-                </Button>
+            {!isCollapsed && (
+              <div className="px-3 pb-1 text-xs font-medium text-muted-foreground">
+                Main
+              </div>
+            )}
+            
+            {mainFeatures.map(feature => (
+              <NavLink
+                key={feature.path}
+                to={feature.path}
+                className={({ isActive }) => cn(
+                  'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                  isCollapsed && 'justify-center'
+                )}
+              >
+                <feature.icon size={20} className={isCollapsed ? '' : 'mr-2'} />
+                {!isCollapsed && <span>{feature.name}</span>}
               </NavLink>
             ))}
           </div>
-
-          <div className="mt-6">
-            <div className={cn("px-2 mb-1", isCollapsed ? "sr-only" : "")}>
-              <h3 className="text-xs font-medium text-muted-foreground">Doraemon Features</h3>
-            </div>
-            <div className="space-y-1">
-              {implementedFeatures.map((feature) => (
-                <NavLink to={feature.path} key={feature.path}>
-                  <Button
-                    variant={isActiveRoute(feature.path) ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isCollapsed && "justify-center px-0"
-                    )}
-                    size={isCollapsed ? "icon" : "default"}
-                  >
-                    <feature.icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
-                    {!isCollapsed && <span>{feature.name}</span>}
-                  </Button>
+          
+          <div className="mt-6 space-y-1">
+            {!isCollapsed && (
+              <div className="px-3 pb-1 text-xs font-medium text-muted-foreground">
+                Advanced Features
+              </div>
+            )}
+            
+            {advancedFeatures.map(feature => {
+              const isPlanned = feature.status === 'planned';
+              const isInDev = feature.status === 'dev';
+              
+              return (
+                <NavLink
+                  key={feature.path}
+                  to={feature.path}
+                  className={({ isActive }) => cn(
+                    'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : isPlanned
+                        ? 'text-muted-foreground hover:bg-accent hover:text-accent-foreground opacity-50'
+                        : isInDev
+                          ? 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    isCollapsed && 'justify-center'
+                  )}
+                >
+                  <feature.icon size={20} className={isCollapsed ? '' : 'mr-2'} />
+                  {!isCollapsed && (
+                    <div className="flex justify-between items-center w-full">
+                      <span>{feature.name}</span>
+                      {isPlanned && (
+                        <span className="text-xs bg-muted px-1.5 py-0.5 rounded-sm">Coming Soon</span>
+                      )}
+                      {isInDev && (
+                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm">Beta</span>
+                      )}
+                    </div>
+                  )}
                 </NavLink>
-              ))}
-            </div>
+              );
+            })}
           </div>
-
-          <div className="mt-6">
-            <div className={cn("px-2 mb-1", isCollapsed ? "sr-only" : "")}>
-              <h3 className="text-xs font-medium text-muted-foreground">Coming Soon</h3>
-            </div>
-            <div className="space-y-1">
-              {futureFeatures.map((feature) => (
-                <NavLink to={feature.path} key={feature.path}>
-                  <Button
-                    variant={isActiveRoute(feature.path) ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start opacity-70",
-                      isCollapsed && "justify-center px-0"
-                    )}
-                    size={isCollapsed ? "icon" : "default"}
-                  >
-                    <feature.icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
-                    {!isCollapsed && <span>{feature.name}</span>}
-                  </Button>
-                </NavLink>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <div className={cn("px-2 mb-1", isCollapsed ? "sr-only" : "")}>
-              <h3 className="text-xs font-medium text-muted-foreground">Utilities</h3>
-            </div>
-            <div className="space-y-1">
-              {utilityFeatures.map((feature) => (
-                <NavLink to={feature.path} key={feature.path}>
-                  <Button
-                    variant={isActiveRoute(feature.path) ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isCollapsed && "justify-center px-0"
-                    )}
-                    size={isCollapsed ? "icon" : "default"}
-                  >
-                    <feature.icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
-                    {!isCollapsed && <span>{feature.name}</span>}
-                  </Button>
-                </NavLink>
-              ))}
-            </div>
-          </div>
-        </div>
+        </nav>
       </ScrollArea>
       
-      {!isCollapsed && (
-        <div className="p-2 border-t">
-          <div className="p-2 rounded-md text-xs text-muted-foreground">
-            <div className="font-medium">Logged in as:</div>
-            <div className="truncate">{user?.email}</div>
+      <div className={cn(
+        'border-t p-4',
+        isCollapsed ? 'flex justify-center' : ''
+      )}>
+        {!isCollapsed ? (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              {user?.name?.[0] || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm truncate">
+                {user?.name || 'Astronaut'}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                ISS Crew Member
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" asChild>
+              <NavLink to="/settings">
+                <Settings size={18} />
+              </NavLink>
+            </Button>
           </div>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            {user?.name?.[0] || 'U'}
+          </div>
+        )}
+      </div>
+    </aside>
   );
 };
 
