@@ -22,13 +22,16 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import IssGuidelines from "./pages/IssGuidelines";
 
-// New Doraemon-inspired feature pages
+// Doraemon-inspired feature pages
 import InstantNavigation from "./pages/InstantNavigation";
 import SpoilageSimulation from "./pages/SpoilageSimulation";
 import SmartTagging from "./pages/SmartTagging";
 
-// Future Features Placeholder Page
-import FutureFeature from "./pages/FutureFeature";
+// Future Features Pages
+import ZoomableView from "./pages/ZoomableView";
+import Translator from "./pages/Translator";
+import TransferAssistant from "./pages/TransferAssistant";
+import EventPredictor from "./pages/EventPredictor";
 
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -85,16 +88,16 @@ const App = () => {
                   <Route path="/iss-guidelines" element={<IssGuidelines />} />
                   <Route path="/settings" element={<Settings />} />
                   
-                  {/* Doraemon-inspired Feature Routes - Now Implemented */}
+                  {/* Doraemon-inspired Feature Routes - Implemented */}
                   <Route path="/instant-navigation" element={<InstantNavigation />} />
                   <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
                   <Route path="/smart-tagging" element={<SmartTagging />} />
                   
                   {/* Future Feature Routes */}
-                  <Route path="/zoomable-view" element={<FutureFeature feature="Zoomable 3D View" />} />
-                  <Route path="/translator" element={<FutureFeature feature="Multilingual Translator Layer" />} />
-                  <Route path="/transfer-assistant" element={<FutureFeature feature="Visual Item Transfer Assistant" />} />
-                  <Route path="/event-predictor" element={<FutureFeature feature="Space Event Predictor" />} />
+                  <Route path="/zoomable-view" element={<ZoomableView />} />
+                  <Route path="/translator" element={<Translator />} />
+                  <Route path="/transfer-assistant" element={<TransferAssistant />} />
+                  <Route path="/event-predictor" element={<EventPredictor />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
