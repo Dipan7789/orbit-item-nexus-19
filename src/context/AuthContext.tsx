@@ -1,9 +1,10 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { User, extendUser } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -28,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         setSession(newSession);
-        setUser(newSession?.user ?? null);
+        setUser(extendUser(newSession?.user ?? null));
         setIsLoading(false);
         
         if (event === 'SIGNED_IN') {
@@ -48,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
-      setUser(currentSession?.user ?? null);
+      setUser(extendUser(currentSession?.user ?? null));
       setIsLoading(false);
     });
 

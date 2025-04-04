@@ -79,7 +79,7 @@ const Settings = () => {
         </Card>
         
         <TabsContent value="profile" className="space-y-6">
-          <ProfileSettings user={user} />
+          <ProfileSettings />
         </TabsContent>
         
         <TabsContent value="notifications" className="space-y-6">
