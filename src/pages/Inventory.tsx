@@ -20,12 +20,6 @@ import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
 import { dummyInventoryData } from '@/data/dummyData';
 import { InventoryItem } from '@/types/inventory';
 
-// Helper function to format dates consistently
-const formatDate = (date: Date | string | undefined): string => {
-  if (!date) return '-';
-  return typeof date === 'string' ? date : date.toISOString().split('T')[0];
-};
-
 const Inventory = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -206,7 +200,7 @@ const Inventory = () => {
                         {item.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatDate(item.lastUsed)}</TableCell>
+                    <TableCell>{item.lastUsed}</TableCell>
                     <TableCell className="text-right">
                       <InventoryActions 
                         itemId={item.id} 

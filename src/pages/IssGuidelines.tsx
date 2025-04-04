@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,21 +6,19 @@ import { Separator } from '@/components/ui/separator';
 import { IssViewer } from '@/components/iss/IssViewer';
 import { SpaceMap } from '@/components/iss/SpaceMap';
 import IssDoraemonFeatures from '@/components/iss/IssDoraemonFeatures';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const IssGuidelines = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const isMobile = useIsMobile();
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">ISS Guidelines</h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore the International Space Station and its guidelines</p>
+        <h1 className="text-3xl font-bold tracking-tight">ISS Guidelines</h1>
+        <p className="text-muted-foreground mt-1">Explore the International Space Station and its guidelines</p>
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="overflow-x-auto w-full justify-start space-x-1 md:space-x-2 py-1 md:py-2 px-0.5 md:px-1 text-xs md:text-sm">
+        <TabsList className="overflow-x-auto w-full justify-start space-x-2 py-2 px-1">
           <TabsTrigger value="overview" className="hover:text-primary-foreground transition-colors">Overview</TabsTrigger>
           <TabsTrigger value="3d-model" className="hover:text-primary-foreground transition-colors">3D ISS Model</TabsTrigger>
           <TabsTrigger value="space-map" className="hover:text-primary-foreground transition-colors">Space Map</TabsTrigger>
@@ -29,13 +28,13 @@ const IssGuidelines = () => {
         
         <TabsContent value="overview" className="space-y-4">
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
+            <CardHeader>
               <CardTitle>International Space Station</CardTitle>
               <CardDescription>
                 Overview of the ISS and its mission
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 p-4 md:p-6">
+            <CardContent className="space-y-4">
               <div className="aspect-video rounded-md overflow-hidden">
                 <img 
                   src="https://www.nasa.gov/wp-content/uploads/2023/03/iss068e024412.jpg" 
@@ -44,7 +43,7 @@ const IssGuidelines = () => {
                 />
               </div>
               
-              <div className="prose dark:prose-invert max-w-none text-sm md:text-base">
+              <div className="prose dark:prose-invert max-w-none">
                 <p>
                   The International Space Station (ISS) is a modular space station in low Earth orbit. 
                   It's a multinational collaborative project involving five space agencies: NASA (United States), 
@@ -55,8 +54,8 @@ const IssGuidelines = () => {
                   scientific research is conducted in astrobiology, astronomy, meteorology, physics, and other fields.
                 </p>
                 
-                <h3 className="text-lg md:text-xl">Key Facts</h3>
-                <ul className="text-sm md:text-base">
+                <h3>Key Facts</h3>
+                <ul>
                   <li>Orbit altitude: 400 km (250 mi)</li>
                   <li>Speed: 28,000 km/h (17,500 mph)</li>
                   <li>Orbits per day: 15.5</li>
@@ -129,7 +128,7 @@ const IssGuidelines = () => {
         <TabsContent value="3d-model">
           <Card className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-0">
-              <div className="h-[50vh] md:h-[80vh] w-full">
+              <div className="h-[80vh] w-full">
                 <IssViewer />
               </div>
             </CardContent>
@@ -139,7 +138,7 @@ const IssGuidelines = () => {
         <TabsContent value="space-map">
           <Card className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-0">
-              <div className="h-[50vh] md:h-[80vh] w-full">
+              <div className="h-[80vh] w-full">
                 <SpaceMap />
               </div>
             </CardContent>
@@ -148,13 +147,13 @@ const IssGuidelines = () => {
         
         <TabsContent value="guidelines" className="space-y-4">
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
+            <CardHeader>
               <CardTitle>ISS Storage Guidelines</CardTitle>
               <CardDescription>
                 Proper storage procedures for the International Space Station
               </CardDescription>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none text-sm md:text-base p-4 md:p-6">
+            <CardContent className="prose dark:prose-invert max-w-none">
               <h3>General Storage Principles</h3>
               <p>
                 All items aboard the ISS must be properly secured at all times. In microgravity, 
@@ -219,13 +218,13 @@ const IssGuidelines = () => {
         
         <TabsContent value="future-features">
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 md:p-6">
+            <CardHeader>
               <CardTitle>Future ISS Management Enhancements</CardTitle>
               <CardDescription>
                 Advanced features planned for future implementation to enhance ISS operations
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
+            <CardContent>
               <IssDoraemonFeatures />
             </CardContent>
           </Card>

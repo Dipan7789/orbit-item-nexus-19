@@ -23,7 +23,6 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -32,7 +31,6 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const { user } = useAuth();
   const location = useLocation();
-  const isMobile = useIsMobile();
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -69,10 +67,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   return (
     <div
       className={cn(
-        "border-r bg-background flex-col fixed inset-y-0 z-30 transition-all",
-        isCollapsed ? "w-16" : "w-64",
-        isMobile && isCollapsed ? "hidden" : "flex",
-        !isMobile && "md:flex"
+        "hidden md:flex border-r bg-background flex-col fixed inset-y-0 z-30 transition-all",
+        isCollapsed ? "w-16" : "w-64"
       )}
     >
       <div className="flex h-16 items-center border-b px-4">
