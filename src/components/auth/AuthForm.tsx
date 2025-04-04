@@ -41,10 +41,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   };
   
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg border-t-4 border-t-primary">
+    <Card className="w-full max-w-md mx-auto shadow-lg border-t-4 border-t-primary animate-fadeIn">
       <CardHeader className="space-y-1">
         <div className="flex justify-center mb-2">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center animate-pulse-slow">
             {type === 'signin' ? 
               <LogIn className="h-6 w-6 text-primary" /> : 
               <UserPlus className="h-6 w-6 text-primary" />
@@ -76,7 +76,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="pl-10"
+                className="pl-10 form-input-focus"
                 required
               />
             </div>
@@ -91,7 +91,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="pl-10"
+                className="pl-10 form-input-focus"
                 required
               />
             </div>
@@ -107,7 +107,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm password"
-                  className="pl-10"
+                  className="pl-10 form-input-focus"
                   required
                 />
               </div>
@@ -116,7 +116,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           
           <Button 
             type="submit" 
-            className="w-full h-11 text-base transition-all duration-200 hover:shadow-md" 
+            className="w-full h-11 text-base transition-all duration-300 hover:shadow-md" 
             disabled={isLoading}
           >
             {isLoading

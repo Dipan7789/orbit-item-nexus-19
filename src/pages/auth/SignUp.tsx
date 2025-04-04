@@ -5,7 +5,7 @@ import AuthForm from '@/components/auth/AuthForm';
 const SignUp = () => {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-4 bg-gradient-to-br from-background to-muted/30">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-slideUp">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
