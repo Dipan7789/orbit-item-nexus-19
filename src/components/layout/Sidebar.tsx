@@ -77,9 +77,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const { user, signOut } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   
-  // Create a user role safeguard
+  // Create a user role safeguard and handle potential undefined values
   const userRole = user?.role || 'viewer';
+  // Safely get user initials or fallback to 'U'
   const userInitials = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
+  const displayName = user?.name || 'User';
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -182,11 +184,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
               <Button variant="ghost" className="w-full justify-start px-2">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
+                    <AvatarImage src={user?.avatar || ''} alt={displayName} />
                     <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">{user?.name || 'User'}</span>
+                    <span className="font-medium">{displayName}</span>
                     <span className="text-xs text-muted-foreground capitalize">{userRole}</span>
                   </div>
                 </div>

@@ -125,10 +125,10 @@ const DeviceSettings = () => {
               <div className="flex items-center gap-3">
                 <Laptop className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="font-medium flex items-center">
+                  <div className="font-medium flex items-center">
                     Workstation PC
                     <Badge className="ml-2 bg-green-500">Current</Badge>
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Windows 11 • Chrome • Last sync: Just now
                   </p>
@@ -146,7 +146,7 @@ const DeviceSettings = () => {
               <div className="flex items-center gap-3">
                 <Smartphone className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="font-medium">Space Station iPad</p>
+                  <div className="font-medium">Space Station iPad</div>
                   <p className="text-sm text-muted-foreground">
                     iPadOS • Safari • Last sync: 3 hours ago
                   </p>
@@ -172,7 +172,7 @@ const DeviceSettings = () => {
               <div className="flex items-center gap-3">
                 <Smartphone className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="font-medium">iPhone 13 Pro</p>
+                  <div className="font-medium">iPhone 13 Pro</div>
                   <p className="text-sm text-muted-foreground">
                     iOS • OrbitNexus App • Last sync: 1 day ago
                   </p>
@@ -198,10 +198,10 @@ const DeviceSettings = () => {
               <div className="flex items-center gap-3">
                 <Tablet className="h-8 w-8 text-muted-foreground" />
                 <div>
-                  <p className="font-medium flex items-center">
+                  <div className="font-medium flex items-center">
                     Mission Control Tablet
                     <Badge variant="outline" className="ml-2">Offline</Badge>
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Android • OrbitNexus App • Last sync: 5 days ago
                   </p>

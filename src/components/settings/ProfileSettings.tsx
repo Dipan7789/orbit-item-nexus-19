@@ -43,6 +43,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return 'U';
     return name
       .split(' ')
       .map(n => n[0])
@@ -65,7 +66,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
               <Avatar className="h-24 w-24 border-2 border-space-blue/30">
                 <AvatarImage src={user?.avatar || ''} alt={profileData.name} />
                 <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                  {profileData.name ? getInitials(profileData.name) : 'U'}
+                  {getInitials(profileData.name)}
                 </AvatarFallback>
               </Avatar>
               <Button variant="outline" size="sm" className="gap-2">
