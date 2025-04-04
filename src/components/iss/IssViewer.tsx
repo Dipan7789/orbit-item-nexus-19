@@ -20,6 +20,9 @@ export const IssViewer: React.FC = () => {
   const [rotationSpeed, setRotationSpeed] = useState(50);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [autoRotate, setAutoRotate] = useState(true);
   
   // Simulate loading progress
   useEffect(() => {
@@ -44,7 +47,49 @@ export const IssViewer: React.FC = () => {
     }
   }, [isLoading]);
   
+  // Update rotation when mouse moves while dragging
+  useEffect(() => {
+    if (isDragging && !isLoading) {
+      const sensitivity = rotationSpeed / 100; // Use rotation speed as sensitivity factor
+      requestAnimationFrame(() => {
+        setRotation(prev => ({
+          x: prev.x + (mousePosition.y - prev.y) * 0.01 * sensitivity,
+          y: prev.y + (mousePosition.x - prev.x) * 0.01 * sensitivity
+        }));
+      });
+      renderIss();
+    }
+  }, [isDragging, mousePosition, rotationSpeed]);
+  
+  // Auto-rotation effect
+  useEffect(() => {
+    let animationId: number;
+    
+    const autoRotateAnimation = () => {
+      if (autoRotate && !isDragging) {
+        setRotation(prev => ({
+          x: prev.x + 0.001 * (rotationSpeed / 50),
+          y: prev.y + 0.002 * (rotationSpeed / 50)
+        }));
+        renderIss();
+      }
+      animationId = requestAnimationFrame(autoRotateAnimation);
+    };
+    
+    if (!isLoading) {
+      animationId = requestAnimationFrame(autoRotateAnimation);
+    }
+    
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [autoRotate, isDragging, isLoading, rotationSpeed]);
+  
   const initializeIssViewer = () => {
+    renderIss();
+  };
+  
+  const renderIss = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -104,54 +149,121 @@ export const IssViewer: React.FC = () => {
     }
     ctx.globalAlpha = 1;
     
-    // Draw a simplified ISS
+    // Calculate ISS position based on rotation
     const issX = canvas.width / 2;
     const issY = canvas.height / 2;
     
+    // Apply rotations (simplified 3D rotation projection)
+    const rotationFactorX = Math.sin(rotation.x);
+    const rotationFactorY = Math.sin(rotation.y);
+    const scaleX = Math.cos(rotation.y) * 0.3 + 0.7; // Scale for perspective
+    const scaleY = Math.cos(rotation.x) * 0.3 + 0.7;
+    
+    // Main body with rotation
+    ctx.save();
+    ctx.translate(issX, issY);
+    ctx.scale(scaleX, scaleY);
+    ctx.rotate(rotationFactorY * 0.2); // Apply slight rotation based on mouse Y
+    
     // Main body
     ctx.fillStyle = '#CCCCCC';
-    ctx.fillRect(issX - 100, issY - 20, 200, 40);
+    ctx.fillRect(-100, -20, 200, 40);
     
-    // Solar panels
+    // Solar panels (adjust position based on rotation)
     ctx.fillStyle = '#3366CC';
-    ctx.fillRect(issX - 150, issY - 60, 40, 120); // Left panel
-    ctx.fillRect(issX + 110, issY - 60, 40, 120); // Right panel
+    
+    // Left panel
+    ctx.save();
+    ctx.translate(-150, 0);
+    ctx.rotate(rotationFactorX * 0.5); // Rotate panel based on mouse X
+    ctx.fillRect(-20, -60, 40, 120);
+    ctx.restore();
+    
+    // Right panel
+    ctx.save();
+    ctx.translate(150, 0);
+    ctx.rotate(rotationFactorX * 0.5); // Rotate panel based on mouse X
+    ctx.fillRect(-20, -60, 40, 120);
+    ctx.restore();
     
     // Module connectors
     ctx.fillStyle = '#999999';
-    ctx.fillRect(issX - 125, issY - 10, 25, 20); // Left connector
-    ctx.fillRect(issX + 100, issY - 10, 25, 20); // Right connector
+    ctx.fillRect(-125, -10, 25, 20); // Left connector
+    ctx.fillRect(100, -10, 25, 20); // Right connector
     
     // Modules
     ctx.fillStyle = '#DDDDDD';
-    ctx.fillRect(issX - 100, issY - 30, 50, 60); // Left module
-    ctx.fillRect(issX + 50, issY - 30, 50, 60); // Right module
+    ctx.fillRect(-100, -30, 50, 60); // Left module
+    ctx.fillRect(50, -30, 50, 60); // Right module
+    
+    // Additional modules (visible based on rotation)
+    const modulesOpacity = Math.max(0.2, Math.min(1, (rotationFactorY + 1) / 1.5));
+    ctx.globalAlpha = modulesOpacity;
+    ctx.fillStyle = '#BBBBBB';
+    
+    // Front modules
+    if (rotationFactorY > -0.5) {
+      ctx.fillRect(-20, -40, 40, 80); // Center module
+    }
+    
+    // Back modules
+    if (rotationFactorY < 0.5) {
+      ctx.fillRect(-75, -15, 30, 30); // Small back module
+      ctx.fillRect(45, -15, 30, 30); // Small back module
+    }
+    
+    ctx.globalAlpha = 1;
+    
+    // Add highlights for 3D effect
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.5;
+    ctx.strokeRect(-100, -20, 200, 40); // Main body highlight
+    ctx.globalAlpha = 1;
+    
+    ctx.restore();
     
     // Label
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '16px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('International Space Station', issX, issY + 80);
+    ctx.fillText('International Space Station', issX, issY + 120);
     
-    // Note: In a real implementation, this would use Three.js to render a 3D model
-    // that can be rotated and zoomed. This is a simplified placeholder.
+    // View mode indicator
+    const modeText = viewMode.charAt(0).toUpperCase() + viewMode.slice(1) + ' View';
+    ctx.font = '12px Arial';
+    ctx.fillText(modeText, issX, issY + 140);
   };
   
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (!isLoading) {
-        initializeIssViewer();
+        renderIss();
       }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isLoading]);
+  }, [isLoading, rotation]);
   
-  // Mouse event handlers for better hover interaction
-  const handleMouseDown = () => {
+  // Mouse event handlers for interactive rotation
+  const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
+    setAutoRotate(false);
+    setMousePosition({
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+  
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    }
   };
   
   const handleMouseUp = () => {
@@ -170,12 +282,29 @@ export const IssViewer: React.FC = () => {
     };
   }, []);
   
+  const handleResetView = () => {
+    setRotation({ x: 0, y: 0 });
+    setAutoRotate(true);
+  };
+  
+  const handleToggleAutoRotate = () => {
+    setAutoRotate(!autoRotate);
+  };
+  
+  const handleScreenshot = () => {
+    if (canvasRef.current) {
+      const dataUrl = canvasRef.current.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'iss-screenshot.png';
+      link.href = dataUrl;
+      link.click();
+    }
+  };
+  
   return (
     <div 
       className="relative h-full" 
       ref={containerRef}
-      onMouseDown={handleMouseDown}
-      onMouseLeave={handleMouseLeave}
     >
       {isLoading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
@@ -194,7 +323,11 @@ export const IssViewer: React.FC = () => {
         <>
           <canvas 
             ref={canvasRef} 
-            className="w-full h-full"
+            className="w-full h-full cursor-move"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
           />
           
           <div className="absolute top-4 left-4 space-y-2 pointer-events-auto">
@@ -212,7 +345,7 @@ export const IssViewer: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors">
-              <span className="text-xs">Rotation</span>
+              <span className="text-xs">Rotation Speed</span>
               <Slider
                 value={[rotationSpeed]}
                 min={0}
@@ -224,21 +357,41 @@ export const IssViewer: React.FC = () => {
             </div>
             
             <div className="flex gap-2">
-              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
+                onClick={handleResetView}
+              >
                 Reset View
               </Button>
-              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
+                onClick={handleScreenshot}
+              >
                 Screenshot
               </Button>
             </div>
+            
+            <Button
+              size="sm"
+              variant={autoRotate ? "default" : "outline"}
+              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors w-full"
+              onClick={handleToggleAutoRotate}
+            >
+              {autoRotate ? "Auto-Rotation: ON" : "Auto-Rotation: OFF"}
+            </Button>
           </div>
           
           <div className="absolute bottom-4 right-4 w-72 pointer-events-auto">
             <Alert className="bg-background/80 backdrop-blur-sm border-amber-500 hover:bg-background/90 transition-colors">
               <AlertCircle className="h-4 w-4 text-amber-500" />
-              <AlertTitle className="text-amber-500">Placeholder Visualization</AlertTitle>
+              <AlertTitle className="text-amber-500">Interactive Controls</AlertTitle>
               <AlertDescription className="text-xs">
-                This is a placeholder for a 3D model. In a real implementation, this would use Three.js to render an interactive 3D model of the ISS.
+                Click and drag to rotate the ISS model. Use the rotation speed slider to adjust sensitivity.
+                Reset the view or toggle auto-rotation with the control buttons.
               </AlertDescription>
             </Alert>
           </div>
