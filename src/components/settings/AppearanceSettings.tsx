@@ -8,10 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Circle, Moon, Sun, Monitor, Save } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const AppearanceSettings = () => {
   const { toast } = useToast();
-  const [theme, setTheme] = useState('system');
+  const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState({
     animationsEnabled: true,
     reducedMotion: false,
@@ -21,7 +22,7 @@ const AppearanceSettings = () => {
   });
 
   const handleThemeChange = (value: string) => {
-    setTheme(value);
+    setTheme(value as 'light' | 'dark' | 'system');
   };
 
   const handleToggle = (key: keyof typeof settings) => {

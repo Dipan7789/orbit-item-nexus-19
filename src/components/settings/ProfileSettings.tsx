@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ interface ProfileSettingsProps {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -23,6 +24,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
     title: user?.title || '',
     bio: user?.bio || '',
   });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,7 +37,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
 
   const handleSaveProfile = () => {
     // In a real app, this would update the user profile
-    console.log('Saving profile:', profileData);
+    console.log('Saving profile:', { ...profileData, avatar: avatarUrl });
     toast({
       title: "Profile updated",
       description: "Your profile information has been updated successfully.",
@@ -51,6 +53,47 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
       .toUpperCase();
   };
 
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setAvatarUrl(event.target.result as string);
+        toast({
+          title: "Avatar updated",
+          description: "Your profile picture has been updated.",
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <>
       <Card>
@@ -63,13 +106,31 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
         <CardContent className="space-y-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col items-center gap-4">
-              <Avatar className="h-24 w-24 border-2 border-space-blue/30">
-                <AvatarImage src={user?.avatar || ''} alt={profileData.name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                  {getInitials(profileData.name)}
+              <Avatar 
+                className="h-24 w-24 border-2 border-primary/20 cursor-pointer"
+                onClick={handleAvatarClick}
+              >
+                <AvatarImage src={avatarUrl || ''} alt={profileData.name} />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl relative group">
+                  {avatarUrl ? '' : getInitials(profileData.name)}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                    <Camera className="h-8 w-8 text-white" />
+                  </div>
                 </AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="sm" className="gap-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*" 
+                onChange={handleFileChange}
+              />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={handleAvatarClick}
+              >
                 <Upload size={14} />
                 Change Photo
               </Button>
@@ -134,20 +195,19 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                 <textarea 
                   id="bio"
                   name="bio"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={profileData.bio}
                   onChange={handleInputChange}
-                  placeholder="A brief description about yourself"
+                  placeholder="Tell us about yourself"
+                  className="w-full min-h-[100px] px-3 py-2 border rounded-md resize-y"
                 />
               </div>
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end gap-2">
-          <Button variant="outline">Cancel</Button>
+        <CardFooter className="flex justify-end">
           <Button onClick={handleSaveProfile} className="gap-2">
             <Save size={16} />
-            Save Changes
+            Save Profile
           </Button>
         </CardFooter>
       </Card>

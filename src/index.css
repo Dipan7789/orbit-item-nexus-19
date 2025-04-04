@@ -5,44 +5,48 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
-    --card: 222 47% 15%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 226 57% 21%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 226 57% 17%;
-    --muted-foreground: 217 10% 70%;
-
-    --accent: 226 57% 17%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 226 57% 20%;
-    --input: 226 57% 20%;
-    --ring: 224 76% 48%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 15%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 226 57% 20%;
-    --sidebar-ring: 224 76% 48%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -50,44 +54,33 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                     radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.05) 0%, transparent 50%);
-    background-attachment: fixed;
-  }
-  
-  /* Custom scrollbar for space theme */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    @apply bg-space-deep-blue;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-space-blue rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-space-bright-blue;
   }
 }
 
-@layer utilities {
-  .glass-panel {
-    @apply bg-black bg-opacity-20 backdrop-blur-md border border-white/10 shadow-lg;
-  }
-  
-  .space-card {
-    @apply bg-card rounded-lg border border-space-blue/30 shadow-lg shadow-space-blue/5 backdrop-blur-sm;
-  }
-  
-  .grid-bg {
-    background-image: linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
+.space-card {
+  @apply bg-card/60 border border-border/60 shadow-sm;
+}
+
+/* Add hover and interaction styles for avatar upload */
+.avatar-upload {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar-upload:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
