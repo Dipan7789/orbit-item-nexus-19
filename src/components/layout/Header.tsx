@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8 border border-space-blue/30">
-                  <AvatarImage src={user?.avatar} alt={user?.name || ''} />
+                  <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {user?.name ? getInitials(user.name) : 'U'}
                   </AvatarFallback>
@@ -91,9 +91,9 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
             <DropdownMenuContent className="w-56 mt-1 bg-card/95 backdrop-blur-sm border-space-blue/30" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
+                  <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
+                    {user?.email || 'No email'}
                   </p>
                 </div>
               </DropdownMenuLabel>

@@ -40,9 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const location = useLocation();
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
-  // Role-based color scheme
+  // Role-based color scheme with null check
   const getRoleColor = () => {
-    if (!user) return 'bg-primary';
+    if (!user || !user.role) return 'bg-primary';
     
     switch (user.role) {
       case 'commander':
@@ -56,9 +56,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     }
   };
 
-  // Role-based icon
+  // Role-based icon with null check
   const getRoleIcon = () => {
-    if (!user) return User;
+    if (!user || !user.role) return User;
     
     switch (user.role) {
       case 'commander':
@@ -227,7 +227,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
                 <div className="ml-3">
                   <p className="text-sm font-medium text-foreground">{user?.name || 'Astronaut'}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user?.role.charAt(0).toUpperCase() + user?.role.slice(1) || 'ISS Station'}
+                    {user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : 'ISS Station'}
                   </p>
                 </div>
               )}
