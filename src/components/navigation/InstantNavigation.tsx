@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Flash, MapPin, Search, Navigation } from 'lucide-react';
+import { Zap, MapPin, Search, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -107,7 +107,8 @@ const InstantNavigation: React.FC<InstantNavigationProps> = ({ onNavigate }) => 
               <SelectValue placeholder="Quick select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Select location</SelectItem>
+              {/* Fixed: Changed empty string to "all" */}
+              <SelectItem value="all">Select location</SelectItem>
               {locations.map((location) => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}
@@ -136,7 +137,7 @@ const InstantNavigation: React.FC<InstantNavigationProps> = ({ onNavigate }) => 
                   onClick={() => handleNavigate(location.id)}
                   disabled={navigating}
                 >
-                  <Flash className="h-4 w-4" />
+                  <Zap className="h-4 w-4" />
                   Teleport
                 </Button>
               </CardFooter>

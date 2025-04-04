@@ -31,13 +31,16 @@ interface InventoryEditFormProps {
   onCancel: () => void;
 }
 
+// Define allowed priority values
+type PriorityType = "high" | "medium" | "low";
+
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   description: z.string().optional(),
   category: z.string(),
   quantity: z.coerce.number().min(0),
   location: z.string(),
-  priority: z.union([z.string(), z.number()]),
+  priority: z.enum(["high", "medium", "low"]),
   width_cm: z.coerce.number().min(0).optional(),
   depth_cm: z.coerce.number().min(0).optional(),
   height_cm: z.coerce.number().min(0).optional(),
@@ -70,7 +73,7 @@ const InventoryEditForm: React.FC<InventoryEditFormProps> = ({
       category: item?.category || 'personal',
       quantity: item?.quantity || 1,
       location: item?.location || 'module-a',
-      priority: item?.priority || 'medium',
+      priority: (item?.priority as PriorityType) || 'medium',
       width_cm: item?.width_cm || 0,
       depth_cm: item?.depth_cm || 0,
       height_cm: item?.height_cm || 0,
@@ -222,7 +225,7 @@ const InventoryEditForm: React.FC<InventoryEditFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />
