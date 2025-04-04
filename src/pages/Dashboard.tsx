@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +38,12 @@ const Dashboard = () => {
 
   // Save an item
   const handleSaveItem = (item: InventoryItem) => {
-    setInventoryItems(prev => [...prev, item]);
+    const newItem: InventoryItem = {
+      ...item,
+      priority: typeof item.priority === 'string' ? item.priority : String(item.priority)
+    };
+    
+    setInventoryItems(prev => [...prev, newItem as any]);
     toast({
       title: "Item Added",
       description: `${item.name} has been added to the inventory.`,
@@ -180,7 +184,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* New ExpiryTracker component */}
       <ExpiryTracker />
 
       <Card className="space-card">
@@ -200,7 +203,6 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Add Item Dialog */}
       <InventoryItemDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

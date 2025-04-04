@@ -37,20 +37,28 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className={`fixed inset-0 bg-black/50 z-20 transition-opacity duration-200 lg:hidden ${
-        sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-      }`} onClick={toggleSidebar} />
+    <div className="flex min-h-screen bg-background">
+      {/* Overlay for mobile */}
+      <div 
+        className={`fixed inset-0 bg-black/50 z-20 transition-opacity duration-200 lg:hidden ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`} 
+        onClick={toggleSidebar} 
+      />
       
-      <div className={`fixed top-0 bottom-0 left-0 z-30 w-64 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      {/* Sidebar container */}
+      <div 
+        className={`fixed top-0 bottom-0 left-0 z-30 transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 lg:static`}
+      >
         <Sidebar isCollapsed={sidebarCollapsed} />
       </div>
       
+      {/* Main content area */}
       <div 
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
+          !isMobile && !sidebarCollapsed ? 'lg:ml-64' : 'lg:ml-20'
         }`}
         onClick={handleMainContentClick}
       >
