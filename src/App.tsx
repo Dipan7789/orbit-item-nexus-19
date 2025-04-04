@@ -27,14 +27,24 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 const queryClient = new QueryClient();
 
 // Protected route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return <div className="flex h-screen w-full items-center justify-center">
+      <div className="animate-pulse text-center">
+        <div className="text-lg font-medium">Loading...</div>
+        <div className="text-sm text-muted-foreground">Please wait</div>
+      </div>
+    </div>;
+  }
   
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 const App = () => {

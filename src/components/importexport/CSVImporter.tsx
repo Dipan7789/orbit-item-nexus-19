@@ -5,13 +5,25 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryItem, StorageContainer } from '@/types/inventory';
 import { Upload, FileCheck, AlertTriangle } from 'lucide-react';
-import { processInventoryItems, processStorageContainers } from '@/utils/dataImport';
+import { 
+  processInventoryItems, 
+  processStorageContainers, 
+  validateInventoryItem, 
+  validateStorageContainer 
+} from '@/utils/dataImport';
 import DataPreview from './DataPreview';
 import FileUploader from './FileUploader';
+import CSVValidationAlert from './CSVValidationAlert';
 
 interface CSVImporterProps {
   onItemsImported?: (items: InventoryItem[]) => void;
   onContainersImported?: (containers: StorageContainer[]) => void;
+}
+
+interface ValidationError {
+  row: number;
+  field: string;
+  message: string;
 }
 
 const CSVImporter: React.FC<CSVImporterProps> = ({ 
@@ -25,6 +37,7 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
   const [containersData, setContainersData] = useState<StorageContainer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   const handleFileUpload = (file: File) => {
     if (activeTab === 'items') {
@@ -39,6 +52,7 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
   const processFile = (file: File, type: 'items' | 'containers') => {
     setError(null);
     setSuccess(null);
+    setValidationErrors([]);
     
     const reader = new FileReader();
     
@@ -47,10 +61,40 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
         const csvText = e.target?.result as string;
         
         if (type === 'items') {
+          // Pre-parse CSV to check for validation errors
+          const rawItems = processInventoryItems(csvText, false);
+          const allErrors: ValidationError[] = [];
+          
+          rawItems.forEach((item, index) => {
+            const itemErrors = validateInventoryItem(item, index);
+            allErrors.push(...itemErrors);
+          });
+          
+          if (allErrors.length > 0) {
+            setValidationErrors(allErrors);
+            return;
+          }
+          
+          // Process valid items
           const items = processInventoryItems(csvText);
           setItemsData(items);
           setSuccess(`Successfully imported ${items.length} inventory items`);
         } else {
+          // Pre-parse CSV to check for validation errors
+          const rawContainers = processStorageContainers(csvText, false);
+          const allErrors: ValidationError[] = [];
+          
+          rawContainers.forEach((container, index) => {
+            const containerErrors = validateStorageContainer(container, index);
+            allErrors.push(...containerErrors);
+          });
+          
+          if (allErrors.length > 0) {
+            setValidationErrors(allErrors);
+            return;
+          }
+          
+          // Process valid containers
           const containers = processStorageContainers(csvText);
           setContainersData(containers);
           setSuccess(`Successfully imported ${containers.length} storage containers`);
@@ -76,6 +120,10 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
       setSuccess(`${containersData.length} containers have been imported into the system`);
     }
   };
+  
+  const dismissValidationErrors = () => {
+    setValidationErrors([]);
+  };
 
   return (
     <div className="space-y-6">
@@ -90,6 +138,13 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
             Import inventory items with their dimensions, priority, and storage preferences.
             Expected columns: item_id, name, width_cm, depth_cm, height_cm, mass_kg, priority, expiry_date, usage_limit, preferred_zone
           </div>
+          
+          {validationErrors.length > 0 && (
+            <CSVValidationAlert 
+              errors={validationErrors} 
+              onDismiss={dismissValidationErrors} 
+            />
+          )}
           
           <FileUploader 
             onFileUpload={handleFileUpload} 
@@ -112,6 +167,13 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
             Import storage containers with their location and dimensions.
             Expected columns: zone, container_id, width_cm, depth_cm, height_cm
           </div>
+          
+          {validationErrors.length > 0 && (
+            <CSVValidationAlert 
+              errors={validationErrors} 
+              onDismiss={dismissValidationErrors}
+            />
+          )}
           
           <FileUploader 
             onFileUpload={handleFileUpload} 

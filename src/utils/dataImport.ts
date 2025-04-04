@@ -1,4 +1,3 @@
-
 import { InventoryItem, StorageContainer, itemFitsContainer, calculateVolume } from '../types/inventory';
 
 /**
@@ -172,4 +171,84 @@ export const exportToCSV = <T extends Record<string, any>>(data: T[]): string =>
  */
 export const exportToJSON = <T>(data: T): string => {
   return JSON.stringify(data, null, 2);
+};
+
+/**
+ * Validate inventory item
+ */
+export const validateInventoryItem = (item: Record<string, any>, rowIndex: number) => {
+  const errors = [];
+  
+  // Required fields
+  const requiredFields = ['item_id', 'name', 'width_cm', 'depth_cm', 'height_cm', 'mass_kg', 'priority', 'preferred_zone'];
+  for (const field of requiredFields) {
+    if (!item[field] && item[field] !== 0) {
+      errors.push({
+        row: rowIndex + 2, // +2 for header row and 0-indexing
+        field,
+        message: 'Required field is missing'
+      });
+    }
+  }
+  
+  // Numeric fields
+  const numericFields = ['width_cm', 'depth_cm', 'height_cm', 'mass_kg', 'priority'];
+  for (const field of numericFields) {
+    if (item[field] && (isNaN(Number(item[field])) || Number(item[field]) < 0)) {
+      errors.push({
+        row: rowIndex + 2,
+        field,
+        message: 'Must be a positive number'
+      });
+    }
+  }
+  
+  // Volume check
+  if (
+    !isNaN(Number(item.width_cm)) && 
+    !isNaN(Number(item.depth_cm)) && 
+    !isNaN(Number(item.height_cm)) &&
+    Number(item.width_cm) * Number(item.depth_cm) * Number(item.height_cm) === 0
+  ) {
+    errors.push({
+      row: rowIndex + 2,
+      field: 'dimensions',
+      message: 'Item has zero volume (width, depth, or height is 0)'
+    });
+  }
+  
+  return errors;
+};
+
+/**
+ * Validate storage container
+ */
+export const validateStorageContainer = (container: Record<string, any>, rowIndex: number) => {
+  const errors = [];
+  
+  // Required fields
+  const requiredFields = ['zone', 'container_id', 'width_cm', 'depth_cm', 'height_cm'];
+  for (const field of requiredFields) {
+    if (!container[field] && container[field] !== 0) {
+      errors.push({
+        row: rowIndex + 2,
+        field,
+        message: 'Required field is missing'
+      });
+    }
+  }
+  
+  // Numeric fields
+  const numericFields = ['width_cm', 'depth_cm', 'height_cm'];
+  for (const field of numericFields) {
+    if (container[field] && (isNaN(Number(container[field])) || Number(container[field]) <= 0)) {
+      errors.push({
+        row: rowIndex + 2,
+        field,
+        message: 'Must be a positive number greater than 0'
+      });
+    }
+  }
+  
+  return errors;
 };

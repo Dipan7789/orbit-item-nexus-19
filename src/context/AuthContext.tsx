@@ -1,125 +1,117 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
+// Define the shape of user data
 interface User {
   id: string;
-  name: string;
   email: string;
-  avatar?: string;
-  role: 'astronaut' | 'engineer' | 'scientist' | 'commander';
+  name?: string;
 }
 
+// Define the AuthContext shape
 interface AuthContextType {
-  user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
-  signOut: () => void;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+// Create the context with default values
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  user: null,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+  isLoading: true,
+});
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
+// Auth Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Check for existing user session on mount
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Check for existing auth on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('orbitnexus_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const checkAuth = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          localStorage.removeItem('user');
+        }
+      }
+      setIsLoading(false);
+    };
+    
+    checkAuth();
   }, []);
-
-  // Demo users for hackathon
-  const demoUsers = [
-    {
-      id: '1',
-      name: 'Alex Martinez',
-      email: 'alex@space.com',
-      password: 'password123',
-      avatar: '',
-      role: 'astronaut'
-    },
-    {
-      id: '2',
-      name: 'Sarah Kim',
-      email: 'sarah@space.com',
-      password: 'password123',
-      avatar: '',
-      role: 'commander'
-    }
-  ];
-
+  
+  // Auth methods
   const signIn = async (email: string, password: string) => {
+    // For demo purposes, we'll just simulate authentication
+    // In a real app, you would validate against a backend
     setIsLoading(true);
     
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const matchedUser = demoUsers.find(u => u.email === email && u.password === password);
-    
-    if (matchedUser) {
-      const { password, ...userWithoutPassword } = matchedUser;
-      setUser(userWithoutPassword as User);
-      localStorage.setItem('orbitnexus_user', JSON.stringify(userWithoutPassword));
-    } else {
-      throw new Error('Invalid credentials');
+    // Mock validation - in a real app, this would be server-side
+    if (email && password.length >= 6) {
+      const newUser = { id: Date.now().toString(), email };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
+      setIsLoading(false);
+      return;
     }
     
     setIsLoading(false);
+    throw new Error('Invalid credentials');
   };
-
-  const signUp = async (name: string, email: string, password: string) => {
+  
+  const signUp = async (email: string, password: string) => {
+    // Similar to signIn, but for creating a new account
     setIsLoading(true);
     
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if user already exists
-    if (demoUsers.some(u => u.email === email)) {
-      throw new Error('User already exists');
+    // Mock validation
+    if (email && password.length >= 6) {
+      const newUser = { id: Date.now().toString(), email };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
+      setIsLoading(false);
+      return;
     }
     
-    const newUser = {
-      id: Math.random().toString(36).substring(2, 9),
-      name,
-      email,
-      role: 'astronaut',
-    } as User;
-    
-    setUser(newUser);
-    localStorage.setItem('orbitnexus_user', JSON.stringify(newUser));
     setIsLoading(false);
+    throw new Error('Invalid credentials. Password must be at least 6 characters.');
   };
-
-  const signOut = () => {
+  
+  const signOut = async () => {
+    localStorage.removeItem('user');
     setUser(null);
-    localStorage.removeItem('orbitnexus_user');
   };
-
+  
   return (
     <AuthContext.Provider
       value={{
-        user,
         isAuthenticated: !!user,
-        isLoading,
+        user,
         signIn,
         signUp,
-        signOut
+        signOut,
+        isLoading,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
+// Hook for using the auth context
+export const useAuth = () => useContext(AuthContext);
