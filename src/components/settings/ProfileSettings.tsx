@@ -1,217 +1,169 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useToast } from '@/components/ui/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Save, Upload } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-interface ProfileSettingsProps {
-  user: any;
-}
+const ProfileSettings = () => {
+  const { user } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    role: user?.role || 'astronaut',
-    title: user?.title || '',
-    bio: user?.bio || '',
-  });
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRoleChange = (value: string) => {
-    setProfileData(prev => ({ ...prev, role: value }));
-  };
-
-  const handleSaveProfile = () => {
-    // In a real app, this would update the user profile
-    console.log('Saving profile:', { ...profileData, avatar: avatarUrl });
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been updated successfully.",
-    });
-  };
-
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
-  const handleAvatarClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setAvatarUrl(event.target.result as string);
-        toast({
-          title: "Avatar updated",
-          description: "Your profile picture has been updated.",
+  // Handle file upload for profile picture
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+      
+      // Check if storage bucket exists, create if not
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const profileBucket = buckets?.find(bucket => bucket.name === 'avatars');
+      
+      if (!profileBucket) {
+        await supabase.storage.createBucket('avatars', {
+          public: true,
+          fileSizeLimit: 1024 * 1024 * 2 // 2MB
         });
       }
-    };
-    reader.readAsDataURL(file);
+      
+      // Upload file
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+        
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Get public URL
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setAvatarUrl(data.publicUrl);
+      
+      toast({
+        title: "Success",
+        description: "Profile picture uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error uploading avatar",
+        description: error.message || "There was an error uploading your avatar",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Update user metadata
+      const { error } = await supabase.auth.updateUser({
+        email: email !== user?.email ? email : undefined,
+        data: {
+          name: name || undefined,
+          avatar_url: avatarUrl || undefined,
+        },
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        description: error.message || "There was an error updating your profile",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>
-            Update your personal information and how it appears across the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex flex-col items-center gap-4">
-              <Avatar 
-                className="h-24 w-24 border-2 border-primary/20 cursor-pointer"
-                onClick={handleAvatarClick}
-              >
-                <AvatarImage src={avatarUrl || ''} alt={profileData.name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl relative group">
-                  {avatarUrl ? '' : getInitials(profileData.name)}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                    <Camera className="h-8 w-8 text-white" />
-                  </div>
-                </AvatarFallback>
+    <Card>
+      <CardHeader>
+        <CardTitle>Profile</CardTitle>
+        <CardDescription>
+          Update your profile information and how others see you on the platform
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="avatar">Profile Picture</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarUrl || undefined} alt="Profile" />
+                <AvatarFallback>{user?.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleFileChange}
-              />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2"
-                onClick={handleAvatarClick}
-              >
-                <Upload size={14} />
-                Change Photo
-              </Button>
-            </div>
-            
-            <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    value={profileData.name} 
-                    onChange={handleInputChange} 
-                    placeholder="Your full name" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    name="email"
-                    type="email" 
-                    value={profileData.email} 
-                    onChange={handleInputChange} 
-                    placeholder="your.email@example.com" 
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <Select value={profileData.role} onValueChange={handleRoleChange}>
-                    <SelectTrigger id="role">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="astronaut">Astronaut</SelectItem>
-                      <SelectItem value="commander">Commander</SelectItem>
-                      <SelectItem value="engineer">Engineer</SelectItem>
-                      <SelectItem value="scientist">Scientist</SelectItem>
-                      <SelectItem value="mission-control">Mission Control</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title/Position</Label>
-                  <Input 
-                    id="title" 
-                    name="title"
-                    value={profileData.title} 
-                    onChange={handleInputChange} 
-                    placeholder="e.g., Flight Engineer, Science Officer" 
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="bio">Biography</Label>
-                <textarea 
-                  id="bio"
-                  name="bio"
-                  value={profileData.bio}
-                  onChange={handleInputChange}
-                  placeholder="Tell us about yourself"
-                  className="w-full min-h-[100px] px-3 py-2 border rounded-md resize-y"
+              <div className="flex flex-col gap-2">
+                <Input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  disabled={uploading}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Recommended: Square JPG, PNG, or GIF, 1MB max
+                </p>
               </div>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <Button onClick={handleSaveProfile} className="gap-2">
-            <Save size={16} />
-            Save Profile
+          
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="john.doe@example.com"
+              disabled={true} // Email changes require re-verification
+            />
+            <p className="text-xs text-muted-foreground">
+              Email changes require verification and re-authentication
+            </p>
+          </div>
+          
+          <Button type="submit" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Save Changes'}
           </Button>
-        </CardFooter>
-      </Card>
-    </>
+        </form>
+      </CardContent>
+      <CardFooter className="border-t px-6 py-4">
+        <p className="text-xs text-muted-foreground">
+          Your profile information may be shared with third-party services in accordance with our privacy policy.
+        </p>
+      </CardFooter>
+    </Card>
   );
 };
 

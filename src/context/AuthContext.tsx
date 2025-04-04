@@ -1,135 +1,135 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
-// Define the shape of user data
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  avatar?: string;
-  role?: string;
-}
-
-// Define the AuthContext shape
 interface AuthContextType {
-  isAuthenticated: boolean;
   user: User | null;
+  session: Session | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  isLoading: boolean;
 }
 
-// Create the context with default values
-const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  user: null,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
-  isLoading: true,
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Check for existing auth on mount
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const checkAuth = () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          // Ensure the user object has the required properties
-          setUser({
-            id: parsedUser.id || '',
-            email: parsedUser.email || '',
-            name: parsedUser.name || parsedUser.email?.split('@')[0] || '',
-            avatar: parsedUser.avatar || '',
-            role: parsedUser.role || 'viewer'
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setIsLoading(false);
+        
+        if (event === 'SIGNED_IN') {
+          toast({
+            title: "Signed in successfully",
+            description: "Welcome back to Space Station Storage"
           });
-        } catch (error) {
-          localStorage.removeItem('user');
+        } else if (event === 'SIGNED_OUT') {
+          toast({
+            title: "Signed out successfully",
+            description: "You have been signed out"
+          });
         }
       }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    
-    checkAuth();
   }, []);
-  
-  // Auth methods
+
   const signIn = async (email: string, password: string) => {
-    // For demo purposes, we'll just simulate authentication
-    // In a real app, you would validate against a backend
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock validation - in a real app, this would be server-side
-    if (email && password.length >= 6) {
-      // Include role and avatar in the mock user
-      const newUser = { 
-        id: Date.now().toString(), 
-        email,
-        name: email.split('@')[0],
-        role: 'engineer', // Default role
-        avatar: '' // Empty string for avatar
-      };
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        throw error;
+      }
+      
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    setIsLoading(false);
-    throw new Error('Invalid credentials');
   };
-  
+
   const signUp = async (email: string, password: string) => {
-    // Similar to signIn, but for creating a new account
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock validation
-    if (email && password.length >= 6) {
-      // Include role and avatar in the mock user
-      const newUser = { 
-        id: Date.now().toString(), 
-        email,
-        name: email.split('@')[0],
-        role: 'engineer', // Default role
-        avatar: '' // Empty string for avatar
-      };
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signUp({ email, password });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Sign up successful",
+        description: "Please check your email to confirm your account"
+      });
+      
+      navigate('/signin');
+    } catch (error: any) {
+      toast({
+        title: "Sign up failed",
+        description: error.message || "Please try again with a different email",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    setIsLoading(false);
-    throw new Error('Invalid credentials. Password must be at least 6 characters.');
   };
-  
+
   const signOut = async () => {
-    localStorage.removeItem('user');
-    setUser(null);
+    try {
+      setIsLoading(true);
+      await supabase.auth.signOut();
+      navigate('/signin');
+    } catch (error: any) {
+      toast({
+        title: "Sign out failed",
+        description: error.message || "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
+
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user,
         user,
+        session,
+        isAuthenticated: !!user,
+        isLoading,
         signIn,
         signUp,
-        signOut,
-        isLoading,
+        signOut
       }}
     >
       {children}
@@ -137,5 +137,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Hook for using the auth context
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

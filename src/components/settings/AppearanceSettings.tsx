@@ -1,200 +1,141 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast';
-import { Separator } from '@/components/ui/separator';
-import { Circle, Moon, Sun, Monitor, Save } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 const AppearanceSettings = () => {
-  const { toast } = useToast();
   const { theme, setTheme } = useTheme();
-  const [settings, setSettings] = useState({
-    animationsEnabled: true,
-    reducedMotion: false,
-    highContrast: false,
-    showStorageGrid: true,
-    compactView: false
-  });
-
-  const handleThemeChange = (value: string) => {
-    setTheme(value as 'light' | 'dark' | 'system');
-  };
-
-  const handleToggle = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSaveAppearance = () => {
-    console.log('Saving appearance settings:', { theme, ...settings });
-    toast({
-      title: "Appearance settings updated",
-      description: "Your appearance preferences have been saved.",
-    });
-  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance Settings</CardTitle>
+        <CardTitle>Appearance</CardTitle>
         <CardDescription>
-          Customize how the app looks and feels
+          Customize the appearance of the application. Choose between light, dark, or system theme.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-medium">Theme</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Choose your preferred color scheme
-            </p>
+        <div className="space-y-2">
+          <Label>Theme</Label>
+          <RadioGroup 
+            defaultValue={theme} 
+            onValueChange={(value) => setTheme(value as 'light' | 'dark' | 'system')}
+            className="grid grid-cols-3 gap-4"
+          >
+            <div>
+              <RadioGroupItem 
+                value="light" 
+                id="theme-light" 
+                className="peer sr-only" 
+              />
+              <Label 
+                htmlFor="theme-light" 
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="mb-3 h-6 w-6"
+                >
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2" />
+                  <path d="M12 20v2" />
+                  <path d="m4.93 4.93 1.41 1.41" />
+                  <path d="m17.66 17.66 1.41 1.41" />
+                  <path d="M2 12h2" />
+                  <path d="M20 12h2" />
+                  <path d="m6.34 17.66-1.41 1.41" />
+                  <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+                Light
+              </Label>
+            </div>
             
-            <RadioGroup 
-              value={theme} 
-              onValueChange={handleThemeChange}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            <div>
+              <RadioGroupItem 
+                value="dark" 
+                id="theme-dark" 
+                className="peer sr-only" 
+              />
+              <Label 
+                htmlFor="theme-dark" 
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="mb-3 h-6 w-6"
+                >
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                Dark
+              </Label>
+            </div>
+            
+            <div>
+              <RadioGroupItem 
+                value="system" 
+                id="theme-system" 
+                className="peer sr-only" 
+              />
+              <Label 
+                htmlFor="theme-system" 
+                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="mb-3 h-6 w-6"
+                >
+                  <rect width="20" height="14" x="2" y="3" rx="2" />
+                  <line x1="8" x2="16" y1="21" y2="21" />
+                  <line x1="12" x2="12" y1="17" y2="21" />
+                </svg>
+                System
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+        
+        <div className="rounded-md bg-muted p-4">
+          <div className="flex items-center gap-2">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="h-5 w-5 text-muted-foreground"
             >
-              <div>
-                <RadioGroupItem
-                  value="light"
-                  id="theme-light"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="theme-light"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <Sun className="h-6 w-6 mb-2" />
-                  <span>Light</span>
-                </Label>
-              </div>
-              
-              <div>
-                <RadioGroupItem
-                  value="dark"
-                  id="theme-dark"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="theme-dark"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <Moon className="h-6 w-6 mb-2" />
-                  <span>Dark</span>
-                </Label>
-              </div>
-              
-              <div>
-                <RadioGroupItem
-                  value="system"
-                  id="theme-system"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="theme-system"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                >
-                  <Monitor className="h-6 w-6 mb-2" />
-                  <span>System</span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Display Options</h3>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Enable Animations</Label>
-                <p className="text-sm text-muted-foreground">
-                  Show animations for transitions and effects
-                </p>
-              </div>
-              <Switch 
-                checked={settings.animationsEnabled}
-                onCheckedChange={() => handleToggle('animationsEnabled')}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Reduced Motion</Label>
-                <p className="text-sm text-muted-foreground">
-                  Minimize animation effects for accessibility
-                </p>
-              </div>
-              <Switch 
-                checked={settings.reducedMotion}
-                onCheckedChange={() => handleToggle('reducedMotion')}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">High Contrast Mode</Label>
-                <p className="text-sm text-muted-foreground">
-                  Increase contrast for better visibility
-                </p>
-              </div>
-              <Switch 
-                checked={settings.highContrast}
-                onCheckedChange={() => handleToggle('highContrast')}
-              />
-            </div>
-          </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Layout Preferences</h3>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Show Storage Grid</Label>
-                <p className="text-sm text-muted-foreground">
-                  Display the storage grid visualization on the dashboard
-                </p>
-              </div>
-              <Switch 
-                checked={settings.showStorageGrid}
-                onCheckedChange={() => handleToggle('showStorageGrid')}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Compact View</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use a more compact layout with less whitespace
-                </p>
-              </div>
-              <Switch 
-                checked={settings.compactView}
-                onCheckedChange={() => handleToggle('compactView')}
-              />
-            </div>
+              <path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7h-5a8 8 0 0 0-5 2 8 8 0 0 0-5-2H2Z" />
+              <path d="M6 11c1.5 0 3 .5 3 2-2 0-3 0-3-2Z" />
+              <path d="M18 11c-1.5 0-3 .5-3 2 2 0 3 0 3-2Z" />
+            </svg>
+            <p className="text-sm text-muted-foreground">
+              Your theme preference will be saved and applied across sessions.
+            </p>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleSaveAppearance} className="gap-2">
-          <Save size={16} />
-          Save Preferences
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
