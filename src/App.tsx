@@ -16,6 +16,7 @@ import StorageMap from "./pages/StorageMap";
 import ImportExport from "./pages/ImportExport";
 import Categories from "./pages/Categories";
 import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
@@ -70,7 +71,7 @@ const App = () => {
                 <Route path="/import-export" element={<ImportExport />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/settings" element={<NotFound />} />
+                <Route path="/settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
