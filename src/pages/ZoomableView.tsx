@@ -9,7 +9,7 @@ const ZoomableView = () => {
   return (
     <FutureFeature 
       feature="Zoomable 3D View" 
-      description={isMobile ? 
+      featureDescription={isMobile ? 
         "Zoom into inventory areas on any device" : 
         "Enables zooming into or out of specific inventory areas, containers, or even individual items"
       }

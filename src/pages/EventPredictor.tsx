@@ -9,7 +9,7 @@ const EventPredictor = () => {
   return (
     <FutureFeature 
       feature="Space Event Predictor" 
-      description={isMobile ? 
+      featureDescription={isMobile ? 
         "Alert system for space events" : 
         "Uses real-time space weather data and AI predictions to alert users about incoming space hazards"
       }

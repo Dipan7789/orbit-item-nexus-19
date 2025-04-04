@@ -9,7 +9,7 @@ const Translator = () => {
   return (
     <FutureFeature 
       feature="Multilingual Translator" 
-      description={isMobile ? 
+      featureDescription={isMobile ? 
         "Real-time translation across languages" : 
         "A real-time translation layer for inventory labels, logs, and notes"
       }
