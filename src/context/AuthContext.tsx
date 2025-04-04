@@ -6,6 +6,8 @@ interface User {
   id: string;
   email: string;
   name?: string;
+  avatar?: string;
+  role?: string;
 }
 
 // Define the AuthContext shape
@@ -61,7 +63,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Mock validation - in a real app, this would be server-side
     if (email && password.length >= 6) {
-      const newUser = { id: Date.now().toString(), email };
+      // Include role and avatar in the mock user
+      const newUser = { 
+        id: Date.now().toString(), 
+        email,
+        name: email.split('@')[0],
+        role: 'engineer', // Default role
+        avatar: '' // Empty string for avatar
+      };
       localStorage.setItem('user', JSON.stringify(newUser));
       setUser(newUser);
       setIsLoading(false);
@@ -81,7 +90,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Mock validation
     if (email && password.length >= 6) {
-      const newUser = { id: Date.now().toString(), email };
+      // Include role and avatar in the mock user
+      const newUser = { 
+        id: Date.now().toString(), 
+        email,
+        name: email.split('@')[0],
+        role: 'engineer', // Default role
+        avatar: '' // Empty string for avatar
+      };
       localStorage.setItem('user', JSON.stringify(newUser));
       setUser(newUser);
       setIsLoading(false);

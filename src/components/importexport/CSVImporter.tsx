@@ -61,8 +61,8 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
         const csvText = e.target?.result as string;
         
         if (type === 'items') {
-          // Pre-parse CSV to check for validation errors
-          const rawItems = processInventoryItems(csvText, false);
+          // Fixed: Removed the second argument since it's not in the definition
+          const rawItems = processInventoryItems(csvText);
           const allErrors: ValidationError[] = [];
           
           rawItems.forEach((item, index) => {
@@ -76,12 +76,13 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
           }
           
           // Process valid items
+          // Fixed: Removed the second argument here as well
           const items = processInventoryItems(csvText);
           setItemsData(items);
           setSuccess(`Successfully imported ${items.length} inventory items`);
         } else {
-          // Pre-parse CSV to check for validation errors
-          const rawContainers = processStorageContainers(csvText, false);
+          // Fixed: Removed the second argument since it's not in the definition
+          const rawContainers = processStorageContainers(csvText);
           const allErrors: ValidationError[] = [];
           
           rawContainers.forEach((container, index) => {
@@ -95,6 +96,7 @@ const CSVImporter: React.FC<CSVImporterProps> = ({
           }
           
           // Process valid containers
+          // Fixed: Removed the second argument here as well
           const containers = processStorageContainers(csvText);
           setContainersData(containers);
           setSuccess(`Successfully imported ${containers.length} storage containers`);
