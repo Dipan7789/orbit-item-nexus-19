@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,16 +18,16 @@ const IssGuidelines = () => {
       </div>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="3d-model">3D ISS Model</TabsTrigger>
-          <TabsTrigger value="space-map">Space Map</TabsTrigger>
-          <TabsTrigger value="guidelines">Guidelines</TabsTrigger>
-          <TabsTrigger value="future-features">Future Features</TabsTrigger>
+        <TabsList className="overflow-x-auto w-full justify-start space-x-2 py-2 px-1">
+          <TabsTrigger value="overview" className="hover:text-primary-foreground transition-colors">Overview</TabsTrigger>
+          <TabsTrigger value="3d-model" className="hover:text-primary-foreground transition-colors">3D ISS Model</TabsTrigger>
+          <TabsTrigger value="space-map" className="hover:text-primary-foreground transition-colors">Space Map</TabsTrigger>
+          <TabsTrigger value="guidelines" className="hover:text-primary-foreground transition-colors">Guidelines</TabsTrigger>
+          <TabsTrigger value="future-features" className="hover:text-primary-foreground transition-colors">Future Features</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle>International Space Station</CardTitle>
               <CardDescription>
@@ -68,7 +69,7 @@ const IssGuidelines = () => {
           </Card>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <CardTitle>Crew Information</CardTitle>
               </CardHeader>
@@ -95,7 +96,7 @@ const IssGuidelines = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <CardTitle>Storage Requirements</CardTitle>
               </CardHeader>
@@ -125,7 +126,7 @@ const IssGuidelines = () => {
         </TabsContent>
         
         <TabsContent value="3d-model">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-0">
               <div className="h-[80vh] w-full">
                 <IssViewer />
@@ -135,7 +136,7 @@ const IssGuidelines = () => {
         </TabsContent>
         
         <TabsContent value="space-map">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-0">
               <div className="h-[80vh] w-full">
                 <SpaceMap />
@@ -145,7 +146,7 @@ const IssGuidelines = () => {
         </TabsContent>
         
         <TabsContent value="guidelines" className="space-y-4">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle>ISS Storage Guidelines</CardTitle>
               <CardDescription>
@@ -216,7 +217,7 @@ const IssGuidelines = () => {
         </TabsContent>
         
         <TabsContent value="future-features">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle>Future ISS Management Enhancements</CardTitle>
               <CardDescription>

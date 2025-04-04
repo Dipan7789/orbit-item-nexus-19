@@ -32,6 +32,7 @@ export const SpaceMap: React.FC = () => {
     timestamp: new Date().toISOString()
   });
   const [showDetails, setShowDetails] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   // Simulate loading and fetching ISS position
   useEffect(() => {
@@ -228,8 +229,34 @@ export const SpaceMap: React.FC = () => {
     ctx.fillText('ISS', issX, issY - 12);
   };
   
+  // Mouse event handlers for better hover interaction
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+  
+  // Add mouse leave handler to handle cases where mouse up occurs outside the component
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+  
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+  
   return (
-    <div className="relative h-full" ref={containerRef}>
+    <div 
+      className="relative h-full" 
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave}
+    >
       {isLoading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
           <div className="text-xl font-bold text-white mb-4">Loading Space Map</div>
@@ -242,8 +269,8 @@ export const SpaceMap: React.FC = () => {
         <>
           <canvas ref={canvasRef} className="w-full h-full" />
           
-          <div className="absolute top-4 left-4 space-y-2">
-            <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md">
+          <div className="absolute top-4 left-4 space-y-2 pointer-events-auto">
+            <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors">
               <span className="text-xs">Zoom</span>
               <Slider
                 value={[zoom]}
@@ -259,7 +286,7 @@ export const SpaceMap: React.FC = () => {
               <Button 
                 size="sm" 
                 variant="secondary" 
-                className="bg-background/80 backdrop-blur-sm"
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
                 onClick={() => setZoom(1)}
               >
                 Reset View
@@ -270,7 +297,7 @@ export const SpaceMap: React.FC = () => {
                     <Button 
                       size="icon" 
                       variant="secondary" 
-                      className="bg-background/80 backdrop-blur-sm"
+                      className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
                       onClick={() => setShowDetails(!showDetails)}
                     >
                       <Info size={16} />
@@ -284,8 +311,8 @@ export const SpaceMap: React.FC = () => {
             </div>
           </div>
           
-          <div className="absolute bottom-4 right-4 w-72">
-            <Alert className="bg-background/80 backdrop-blur-sm border-amber-500">
+          <div className="absolute bottom-4 right-4 w-72 pointer-events-auto">
+            <Alert className="bg-background/80 backdrop-blur-sm border-amber-500 hover:bg-background/90 transition-colors">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertTitle className="text-amber-500">Placeholder Visualization</AlertTitle>
               <AlertDescription className="text-xs">
@@ -294,7 +321,7 @@ export const SpaceMap: React.FC = () => {
             </Alert>
           </div>
           
-          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-md">
+          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-md hover:bg-background/90 transition-colors pointer-events-auto">
             <div className="flex items-center gap-2 mb-1">
               <Satellite className="h-4 w-4 text-primary" />
               <div className="text-sm font-medium">ISS Position</div>
@@ -308,7 +335,7 @@ export const SpaceMap: React.FC = () => {
           </div>
           
           {showDetails && (
-            <div className="absolute top-4 right-4 w-72 bg-background/80 backdrop-blur-sm p-3 rounded-md">
+            <div className="absolute top-4 right-4 w-72 bg-background/80 backdrop-blur-sm p-3 rounded-md hover:bg-background/90 transition-colors pointer-events-auto">
               <div className="flex items-center gap-2 mb-2">
                 <Map className="h-4 w-4 text-primary" />
                 <div className="text-sm font-medium">Trajectory Information</div>

@@ -19,6 +19,7 @@ export const IssViewer: React.FC = () => {
   const [viewMode, setViewMode] = useState('exterior');
   const [rotationSpeed, setRotationSpeed] = useState(50);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   
   // Simulate loading progress
   useEffect(() => {
@@ -148,8 +149,34 @@ export const IssViewer: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isLoading]);
   
+  // Mouse event handlers for better hover interaction
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+  
+  // Add mouse leave handler to handle cases where mouse up occurs outside the component
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+  
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+  
   return (
-    <div className="relative h-full" ref={containerRef}>
+    <div 
+      className="relative h-full" 
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave}
+    >
       {isLoading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
           <div className="text-xl font-bold text-white mb-4">Loading ISS Model</div>
@@ -170,13 +197,13 @@ export const IssViewer: React.FC = () => {
             className="w-full h-full"
           />
           
-          <div className="absolute top-4 left-4 space-y-2">
+          <div className="absolute top-4 left-4 space-y-2 pointer-events-auto">
             <div className="w-48">
               <Select value={viewMode} onValueChange={setViewMode}>
-                <SelectTrigger className="bg-background/80 backdrop-blur-sm">
+                <SelectTrigger className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
                   <SelectValue placeholder="View Mode" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background/95 backdrop-blur-sm">
                   <SelectItem value="exterior">Exterior View</SelectItem>
                   <SelectItem value="interior">Interior View</SelectItem>
                   <SelectItem value="xray">X-Ray View</SelectItem>
@@ -184,7 +211,7 @@ export const IssViewer: React.FC = () => {
               </Select>
             </div>
             
-            <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md">
+            <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors">
               <span className="text-xs">Rotation</span>
               <Slider
                 value={[rotationSpeed]}
@@ -197,17 +224,17 @@ export const IssViewer: React.FC = () => {
             </div>
             
             <div className="flex gap-2">
-              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm">
+              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
                 Reset View
               </Button>
-              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm">
+              <Button size="sm" variant="secondary" className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
                 Screenshot
               </Button>
             </div>
           </div>
           
-          <div className="absolute bottom-4 right-4 w-72">
-            <Alert className="bg-background/80 backdrop-blur-sm border-amber-500">
+          <div className="absolute bottom-4 right-4 w-72 pointer-events-auto">
+            <Alert className="bg-background/80 backdrop-blur-sm border-amber-500 hover:bg-background/90 transition-colors">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertTitle className="text-amber-500">Placeholder Visualization</AlertTitle>
               <AlertDescription className="text-xs">
@@ -216,7 +243,7 @@ export const IssViewer: React.FC = () => {
             </Alert>
           </div>
           
-          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-md">
+          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors pointer-events-auto">
             <div className="text-xs text-muted-foreground">
               Altitude: 420 km • Velocity: 27,600 km/h • Orbit: 92 min
             </div>
