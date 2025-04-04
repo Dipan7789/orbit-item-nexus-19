@@ -35,11 +35,16 @@ const initialInventoryItems = [
   { id: 'item-8', name: 'Emergency Supplies', category: 'Emergency', size: 'Medium', weight: '3.6kg', zoneId: 'zone-c' },
 ];
 
+interface DragItem {
+  id: string;
+  sourceZoneId: string;
+}
+
 // Draggable inventory item component
-const InventoryItem = ({ item, index }) => {
+const InventoryItem = ({ item, index }: { item: any, index: number }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.INVENTORY_ITEM,
-    item: { id: item.id, sourceZoneId: item.zoneId },
+    item: { id: item.id, sourceZoneId: item.zoneId } as DragItem,
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -73,11 +78,11 @@ const InventoryItem = ({ item, index }) => {
 };
 
 // Droppable storage zone component
-const StorageZone = ({ zone, items, onItemDrop, onOptimize }) => {
+const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { zone: any, items: any[], onItemDrop: (itemId: string, sourceZoneId: string, targetZoneId: string) => void, onOptimize: (zoneId: string) => void }) => {
   const { toast } = useToast();
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.INVENTORY_ITEM,
-    drop: (droppedItem) => {
+    drop: (droppedItem: DragItem) => {
       onItemDrop(droppedItem.id, droppedItem.sourceZoneId, zone.id);
       toast({
         title: "Item relocated",
@@ -93,7 +98,7 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }) => {
   const utilizationPercent = (zone.used / zone.capacity) * 100;
   
   // Determine utilization color
-  const getUtilizationColor = (percent) => {
+  const getUtilizationColor = (percent: number) => {
     if (percent < 50) return 'bg-green-500';
     if (percent < 80) return 'bg-yellow-500';
     return 'bg-red-500';
@@ -150,7 +155,7 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }) => {
 };
 
 // AI Recommendation component
-const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading }) => {
+const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading }: { recommendations: any[], onApplyRecommendation: (id: string) => void, isLoading: boolean }) => {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -205,7 +210,7 @@ const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading })
 const StorageMap = () => {
   const { toast } = useToast();
   const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState<Array<any>>([]);
   const [isGeneratingRecommendations, setIsGeneratingRecommendations] = useState(false);
   
   // Generate AI recommendations
@@ -252,7 +257,7 @@ const StorageMap = () => {
   }, []);
 
   // Handle dropping an item into a zone
-  const handleItemDrop = (itemId, sourceZoneId, targetZoneId) => {
+  const handleItemDrop = (itemId: string, sourceZoneId: string, targetZoneId: string) => {
     if (sourceZoneId === targetZoneId) return;
     
     setInventoryItems(items => 
@@ -268,7 +273,7 @@ const StorageMap = () => {
   };
   
   // Apply an AI recommendation
-  const handleApplyRecommendation = (recId) => {
+  const handleApplyRecommendation = (recId: string) => {
     const recommendation = recommendations.find(rec => rec.id === recId);
     
     if (recommendation) {
@@ -294,10 +299,10 @@ const StorageMap = () => {
   };
   
   // Optimize a specific zone
-  const handleOptimizeZone = (zoneId) => {
+  const handleOptimizeZone = (zoneId: string) => {
     toast({
       title: "Zone Optimization",
-      description: `Optimizing ${storageZones.find(z => z.id === zoneId).name}...`,
+      description: `Optimizing ${storageZones.find(z => z.id === zoneId)?.name}...`,
     });
     
     // In a real app, this would call an AI service for specific zone optimization
