@@ -1,254 +1,179 @@
-import { InventoryItem, StorageContainer, itemFitsContainer, calculateVolume } from '../types/inventory';
 
-/**
- * Parse CSV string into an array of objects
- */
-export const parseCSV = (csvText: string): Record<string, any>[] => {
-  const lines = csvText.split('\n');
+import { InventoryItem, StorageContainer } from '../types/inventory';
+
+// Process CSV text to extract inventory items
+export const processInventoryItems = (csvText: string): InventoryItem[] => {
+  const lines = csvText.trim().split('\n');
   const headers = lines[0].split(',').map(header => header.trim());
   
-  return lines.slice(1).filter(line => line.trim() !== '').map(line => {
-    const values = line.split(',').map(value => value.trim());
-    const item: Record<string, any> = {};
+  const items: InventoryItem[] = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(value => value.trim());
+    
+    if (values.length !== headers.length) {
+      console.warn(`Line ${i} has ${values.length} values but headers has ${headers.length} columns. Skipping.`);
+      continue;
+    }
+    
+    const item: any = {
+      dateAdded: new Date().toISOString()
+    };
     
     headers.forEach((header, index) => {
-      // Convert numeric values
-      if (!isNaN(Number(values[index])) && values[index] !== '') {
-        item[header] = Number(values[index]);
-      } else if (values[index] === 'null' || values[index] === '') {
-        item[header] = null;
+      if (header === 'dimensions') {
+        try {
+          item[header] = JSON.parse(values[index]);
+        } catch (e) {
+          console.warn(`Failed to parse dimensions JSON for item at line ${i}. Using empty object.`);
+          item[header] = {};
+        }
+      } else if (header === 'weight') {
+        try {
+          item[header] = JSON.parse(values[index]);
+        } catch (e) {
+          console.warn(`Failed to parse weight JSON for item at line ${i}. Using empty object.`);
+          item[header] = {};
+        }
+      } else if (header === 'tags') {
+        item[header] = values[index].split(';').map(tag => tag.trim());
+      } else if (header === 'expiryDate' || header === 'lastUsed') {
+        const dateStr = values[index];
+        if (dateStr) {
+          item[header] = new Date(dateStr).toISOString();
+        }
+      } else if (header === 'isRestricted') {
+        item[header] = values[index].toLowerCase() === 'true';
+      } else if (header === 'quantity' || header === 'usageLimit' || header === 'usageCount') {
+        item[header] = parseInt(values[index], 10) || 0;
       } else {
         item[header] = values[index];
       }
     });
     
-    return item;
-  });
-};
-
-/**
- * Process inventory items CSV
- */
-export const processInventoryItems = (csvText: string): InventoryItem[] => {
-  const parsedData = parseCSV(csvText);
+    items.push(item as InventoryItem);
+  }
   
-  return parsedData.map(item => ({
-    item_id: item.item_id,
-    name: item.name,
-    width_cm: item.width_cm,
-    depth_cm: item.depth_cm,
-    height_cm: item.height_cm,
-    mass_kg: item.mass_kg,
-    priority: item.priority,
-    expiry_date: item.expiry_date,
-    usage_limit: item.usage_limit,
-    preferred_zone: item.preferred_zone,
-    usage_count: item.usage_count || 0,
-    last_used: item.last_used || null
-  }));
+  return items;
 };
 
-/**
- * Process storage containers CSV
- */
+// Process CSV text to extract storage containers
 export const processStorageContainers = (csvText: string): StorageContainer[] => {
-  const parsedData = parseCSV(csvText);
+  const lines = csvText.trim().split('\n');
+  const headers = lines[0].split(',').map(header => header.trim());
   
-  return parsedData.map(container => {
-    const width = container.width_cm;
-    const depth = container.depth_cm;
-    const height = container.height_cm;
+  const containers: StorageContainer[] = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(value => value.trim());
     
-    return {
-      zone: container.zone,
-      container_id: container.container_id,
-      width_cm: width,
-      depth_cm: depth,
-      height_cm: height,
-      items: [],
-      available_volume_cm3: calculateVolume(width, depth, height)
+    if (values.length !== headers.length) {
+      console.warn(`Line ${i} has ${values.length} values but headers has ${headers.length} columns. Skipping.`);
+      continue;
+    }
+    
+    const container: any = {
+      id: `container-${i}`
     };
-  });
-};
-
-/**
- * Optimal container placement algorithm
- */
-export const findOptimalPlacement = (
-  items: InventoryItem[], 
-  containers: StorageContainer[]
-): { placements: Record<string, string>; unplaced: InventoryItem[] } => {
-  // Sort items by priority (high to low) and perishability (expiring soon first)
-  const sortedItems = [...items].sort((a, b) => {
-    // First sort by priority (higher number = higher priority)
-    if (b.priority !== a.priority) {
-      return b.priority - a.priority;
-    }
     
-    // Then sort by expiry date if both items have one
-    if (a.expiry_date && b.expiry_date) {
-      return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
-    }
-    
-    // Items with expiry dates come before non-expiring items
-    if (a.expiry_date) return -1;
-    if (b.expiry_date) return 1;
-    
-    return 0;
-  });
-  
-  // Clone containers to track remaining space
-  const availableContainers = [...containers].map(container => ({...container}));
-  
-  const placements: Record<string, string> = {};
-  const unplaced: InventoryItem[] = [];
-  
-  // Place each item
-  sortedItems.forEach(item => {
-    // First try to place in preferred zone
-    const preferredContainers = availableContainers
-      .filter(container => container.zone === item.preferred_zone)
-      .sort((a, b) => a.available_volume_cm3! - b.available_volume_cm3!); // Use smallest suitable container first
-    
-    // Then try any container
-    const allContainers = availableContainers
-      .sort((a, b) => a.available_volume_cm3! - b.available_volume_cm3!);
-    
-    // Try preferred containers first, then any container
-    const containerPool = [...preferredContainers, ...allContainers.filter(c => c.zone !== item.preferred_zone)];
-    
-    let placed = false;
-    
-    for (const container of containerPool) {
-      const { fits } = itemFitsContainer(item, container);
-      
-      if (fits) {
-        // Place item in this container
-        placements[item.item_id] = container.container_id;
-        
-        // Update container
-        const itemVolume = calculateVolume(item.width_cm, item.depth_cm, item.height_cm);
-        container.available_volume_cm3! -= itemVolume;
-        container.items!.push(item.item_id);
-        
-        placed = true;
-        break;
+    headers.forEach((header, index) => {
+      if (header === 'isAccessible') {
+        container[header] = values[index].toLowerCase() === 'true';
+      } else if (header === 'width_cm' || header === 'depth_cm' || header === 'height_cm' || header === 'maxWeight_kg') {
+        container[header] = parseFloat(values[index]) || 0;
+      } else {
+        container[header] = values[index];
       }
-    }
+    });
     
-    if (!placed) {
-      unplaced.push(item);
-    }
-  });
-  
-  return { placements, unplaced };
-};
-
-/**
- * Export data to CSV format
- */
-export const exportToCSV = <T extends Record<string, any>>(data: T[]): string => {
-  if (data.length === 0) return '';
-  
-  const headers = Object.keys(data[0]);
-  const csvHeader = headers.join(',');
-  
-  const csvRows = data.map(row => {
-    return headers.map(header => {
-      const value = row[header];
-      // Handle null, undefined, and strings with commas
-      if (value === null || value === undefined) return '';
-      if (typeof value === 'string' && value.includes(',')) return `"${value}"`;
-      return value;
-    }).join(',');
-  });
-  
-  return [csvHeader, ...csvRows].join('\n');
-};
-
-/**
- * Export data to JSON format
- */
-export const exportToJSON = <T>(data: T): string => {
-  return JSON.stringify(data, null, 2);
-};
-
-/**
- * Validate inventory item
- */
-export const validateInventoryItem = (item: Record<string, any>, rowIndex: number) => {
-  const errors = [];
-  
-  // Required fields
-  const requiredFields = ['item_id', 'name', 'width_cm', 'depth_cm', 'height_cm', 'mass_kg', 'priority', 'preferred_zone'];
-  for (const field of requiredFields) {
-    if (!item[field] && item[field] !== 0) {
-      errors.push({
-        row: rowIndex + 2, // +2 for header row and 0-indexing
-        field,
-        message: 'Required field is missing'
-      });
-    }
+    containers.push(container as StorageContainer);
   }
   
-  // Numeric fields
-  const numericFields = ['width_cm', 'depth_cm', 'height_cm', 'mass_kg', 'priority'];
-  for (const field of numericFields) {
-    if (item[field] && (isNaN(Number(item[field])) || Number(item[field]) < 0)) {
-      errors.push({
-        row: rowIndex + 2,
-        field,
-        message: 'Must be a positive number'
-      });
-    }
-  }
+  return containers;
+};
+
+// Validate an inventory item
+export const validateInventoryItem = (item: any, rowIndex: number): Array<{row: number, field: string, message: string}> => {
+  const errors: Array<{row: number, field: string, message: string}> = [];
   
-  // Volume check
-  if (
-    !isNaN(Number(item.width_cm)) && 
-    !isNaN(Number(item.depth_cm)) && 
-    !isNaN(Number(item.height_cm)) &&
-    Number(item.width_cm) * Number(item.depth_cm) * Number(item.height_cm) === 0
-  ) {
+  // Check required fields
+  if (!item.id) {
     errors.push({
-      row: rowIndex + 2,
-      field: 'dimensions',
-      message: 'Item has zero volume (width, depth, or height is 0)'
+      row: rowIndex + 1,
+      field: 'id',
+      message: 'Item ID is required'
+    });
+  }
+  
+  if (!item.name) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'name',
+      message: 'Item name is required'
+    });
+  }
+  
+  if (!item.category) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'category',
+      message: 'Category is required'
+    });
+  }
+  
+  // Check data types
+  if (item.quantity && isNaN(parseInt(item.quantity))) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'quantity',
+      message: 'Quantity must be a number'
+    });
+  }
+  
+  if (item.expiryDate && isNaN(Date.parse(item.expiryDate))) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'expiryDate',
+      message: 'Expiry date must be a valid date format'
     });
   }
   
   return errors;
 };
 
-/**
- * Validate storage container
- */
-export const validateStorageContainer = (container: Record<string, any>, rowIndex: number) => {
-  const errors = [];
+// Validate a storage container
+export const validateStorageContainer = (container: any, rowIndex: number): Array<{row: number, field: string, message: string}> => {
+  const errors: Array<{row: number, field: string, message: string}> = [];
   
-  // Required fields
-  const requiredFields = ['zone', 'container_id', 'width_cm', 'depth_cm', 'height_cm'];
-  for (const field of requiredFields) {
-    if (!container[field] && container[field] !== 0) {
-      errors.push({
-        row: rowIndex + 2,
-        field,
-        message: 'Required field is missing'
-      });
-    }
+  // Check required fields
+  if (!container.zone) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'zone',
+      message: 'Zone is required'
+    });
   }
   
-  // Numeric fields
-  const numericFields = ['width_cm', 'depth_cm', 'height_cm'];
-  for (const field of numericFields) {
-    if (container[field] && (isNaN(Number(container[field])) || Number(container[field]) <= 0)) {
+  if (!container.container_id) {
+    errors.push({
+      row: rowIndex + 1,
+      field: 'container_id',
+      message: 'Container ID is required'
+    });
+  }
+  
+  // Check numeric fields
+  const numericFields = ['width_cm', 'depth_cm', 'height_cm', 'maxWeight_kg'];
+  
+  numericFields.forEach(field => {
+    if (container[field] && isNaN(parseFloat(container[field]))) {
       errors.push({
-        row: rowIndex + 2,
+        row: rowIndex + 1,
         field,
-        message: 'Must be a positive number greater than 0'
+        message: `${field} must be a number`
       });
     }
-  }
+  });
   
   return errors;
 };

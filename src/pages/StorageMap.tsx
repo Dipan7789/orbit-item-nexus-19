@@ -2,433 +2,396 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Grid, Plus, Minus, Maximize2, RotateCw, ArrowUpRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InventoryItem, StorageContainer, calculateVolume } from '@/types/inventory';
+import { Separator } from '@/components/ui/separator';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Package, Move, RefreshCw, ArrowRight, Lightbulb } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-import StorageGrid from '@/components/storage/StorageGrid';
-import StorageModuleSelector from '@/components/storage/StorageModuleSelector';
-import StorageUtilizationInfo from '@/components/storage/StorageUtilizationInfo';
-import StorageOptimizationCard from '@/components/storage/StorageOptimizationCard';
-import StorageVisualization from '@/components/storage/StorageVisualization';
-import StorageCube from '@/components/storage/StorageCube';
+// Define item types for drag and drop
+const ItemTypes = {
+  INVENTORY_ITEM: 'inventoryItem'
+};
 
-// Demo data
-const demoContainers: StorageContainer[] = [
-  { 
-    zone: "Command Center", 
-    container_id: "CMD-001", 
-    width_cm: 60, 
-    depth_cm: 40, 
-    height_cm: 30,
-    items: ["TOOL-1", "MED-2"],
-    available_volume_cm3: 50000
-  },
-  { 
-    zone: "Command Center", 
-    container_id: "CMD-002", 
-    width_cm: 80, 
-    depth_cm: 50, 
-    height_cm: 40,
-    items: [],
-    available_volume_cm3: 160000
-  },
-  { 
-    zone: "Science Lab", 
-    container_id: "LAB-001", 
-    width_cm: 100, 
-    depth_cm: 60, 
-    height_cm: 40,
-    items: ["SCI-1", "SCI-2", "SCI-3"],
-    available_volume_cm3: 120000
-  },
-  { 
-    zone: "Cargo Bay", 
-    container_id: "CARGO-001", 
-    width_cm: 120, 
-    depth_cm: 100, 
-    height_cm: 80,
-    items: ["FOOD-1", "EQUIP-2"],
-    available_volume_cm3: 800000
-  },
-  { 
-    zone: "Medical Bay", 
-    container_id: "MED-001", 
-    width_cm: 50, 
-    depth_cm: 40, 
-    height_cm: 30,
-    items: ["MED-1", "MED-3"],
-    available_volume_cm3: 40000
-  }
+// Mock data for storage zones
+const storageZones = [
+  { id: 'zone-a', name: 'Module A', capacity: 100, used: 65 },
+  { id: 'zone-b', name: 'Module B', capacity: 100, used: 42 },
+  { id: 'zone-c', name: 'Cargo Bay', capacity: 100, used: 87 },
+  { id: 'zone-d', name: 'Lab Storage', capacity: 100, used: 34 },
+  { id: 'zone-e', name: 'Personal Quarters', capacity: 100, used: 56 },
 ];
 
-const demoItems: InventoryItem[] = [
-  {
-    item_id: "TOOL-1",
-    name: "Multi-Tool Set",
-    width_cm: 20,
-    depth_cm: 15,
-    height_cm: 8,
-    mass_kg: 1.2,
-    priority: 6,
-    expiry_date: null,
-    usage_limit: 100,
-    preferred_zone: "Command Center",
-    usage_count: 12,
-    last_used: "2023-03-15"
-  },
-  {
-    item_id: "MED-1",
-    name: "First Aid Kit",
-    width_cm: 30,
-    depth_cm: 20,
-    height_cm: 10,
-    mass_kg: 2.5,
-    priority: 9,
-    expiry_date: "2024-12-01",
-    usage_limit: null,
-    preferred_zone: "Medical Bay",
-    usage_count: 3,
-    last_used: "2023-04-01"
-  },
-  {
-    item_id: "SCI-1",
-    name: "Microscope",
-    width_cm: 25,
-    depth_cm: 20,
-    height_cm: 40,
-    mass_kg: 5.0,
-    priority: 8,
-    expiry_date: null,
-    usage_limit: null,
-    preferred_zone: "Science Lab",
-    usage_count: 45,
-    last_used: "2023-04-12"
-  },
-  {
-    item_id: "FOOD-1",
-    name: "Meal Package",
-    width_cm: 40,
-    depth_cm: 30,
-    height_cm: 20,
-    mass_kg: 3.0,
-    priority: 10,
-    expiry_date: "2023-08-15",
-    usage_limit: 1,
-    preferred_zone: "Cargo Bay",
-    usage_count: 0,
-    last_used: null
-  }
+// Mock inventory items
+const initialInventoryItems = [
+  { id: 'item-1', name: 'Medical Kit', category: 'Medical', size: 'Medium', weight: '2.4kg', zoneId: 'zone-a' },
+  { id: 'item-2', name: 'Food Rations', category: 'Food', size: 'Large', weight: '5.1kg', zoneId: 'zone-a' },
+  { id: 'item-3', name: 'Oxygen Canisters', category: 'Life Support', size: 'Large', weight: '8.3kg', zoneId: 'zone-b' },
+  { id: 'item-4', name: 'Science Equipment', category: 'Scientific', size: 'Medium', weight: '3.7kg', zoneId: 'zone-d' },
+  { id: 'item-5', name: 'Tool Kit', category: 'Equipment', size: 'Small', weight: '1.2kg', zoneId: 'zone-c' },
+  { id: 'item-6', name: 'Personal Items', category: 'Personal', size: 'Small', weight: '0.8kg', zoneId: 'zone-e' },
+  { id: 'item-7', name: 'Water Filters', category: 'Life Support', size: 'Medium', weight: '4.5kg', zoneId: 'zone-b' },
+  { id: 'item-8', name: 'Emergency Supplies', category: 'Emergency', size: 'Medium', weight: '3.6kg', zoneId: 'zone-c' },
 ];
 
-// Demo placement data
-const demoPlacements: Record<string, string> = {
-  "TOOL-1": "CMD-001",
-  "MED-1": "MED-001",
-  "SCI-1": "LAB-001",
-  "FOOD-1": "CARGO-001",
-  "MED-2": "CMD-001",
-  "SCI-2": "LAB-001",
-  "SCI-3": "LAB-001",
-  "MED-3": "MED-001",
-  "EQUIP-2": "CARGO-001"
+// Draggable inventory item component
+const InventoryItem = ({ item, index }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: ItemTypes.INVENTORY_ITEM,
+    item: { id: item.id, sourceZoneId: item.zoneId },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={drag}
+      className={`p-3 mb-2 border rounded-md cursor-move ${
+        isDragging ? 'opacity-50 border-primary' : 'border-border'
+      } hover:bg-accent hover:border-primary transition-colors`}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="font-medium">{item.name}</p>
+          <div className="flex gap-2 text-xs text-muted-foreground mt-1">
+            <span>{item.category}</span>
+            <span>•</span>
+            <span>{item.size}</span>
+            <span>•</span>
+            <span>{item.weight}</span>
+          </div>
+        </div>
+        <div className="text-muted-foreground">
+          <Move size={16} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Droppable storage zone component
+const StorageZone = ({ zone, items, onItemDrop, onOptimize }) => {
+  const { toast } = useToast();
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: ItemTypes.INVENTORY_ITEM,
+    drop: (droppedItem) => {
+      onItemDrop(droppedItem.id, droppedItem.sourceZoneId, zone.id);
+      toast({
+        title: "Item relocated",
+        description: `Item moved to ${zone.name}`,
+      });
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
+
+  // Calculate utilization percentage
+  const utilizationPercent = (zone.used / zone.capacity) * 100;
+  
+  // Determine utilization color
+  const getUtilizationColor = (percent) => {
+    if (percent < 50) return 'bg-green-500';
+    if (percent < 80) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  return (
+    <div 
+      ref={drop} 
+      className={`border rounded-lg p-4 ${
+        isOver ? 'border-primary bg-accent/20' : ''
+      } transition-colors h-full flex flex-col`}
+    >
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-semibold text-lg">{zone.name}</h3>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 w-8 p-0" 
+          onClick={() => onOptimize(zone.id)}
+        >
+          <RefreshCw size={14} />
+        </Button>
+      </div>
+      
+      <div className="mb-3">
+        <div className="flex justify-between text-sm mb-1">
+          <span className="text-muted-foreground">Utilization</span>
+          <span>{utilizationPercent.toFixed(0)}%</span>
+        </div>
+        <div className="w-full bg-muted rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full ${getUtilizationColor(utilizationPercent)}`} 
+            style={{ width: `${utilizationPercent}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      <div className="text-sm mb-2">
+        <span className="text-muted-foreground">{items.length} items</span>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto space-y-2 mt-2">
+        {items.map((item, index) => (
+          <InventoryItem key={item.id} item={item} index={index} />
+        ))}
+        {items.length === 0 && (
+          <div className="text-center text-muted-foreground text-sm py-8">
+            Drop items here
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// AI Recommendation component
+const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading }) => {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
+          <Lightbulb className="h-5 w-5 text-yellow-500" />
+          AI Storage Recommendations
+        </CardTitle>
+        <CardDescription>
+          Smart suggestions to optimize your storage allocation
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="py-8 flex flex-col items-center">
+            <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin mb-2"></div>
+            <p className="text-sm text-muted-foreground">Analyzing storage patterns...</p>
+          </div>
+        ) : recommendations.length > 0 ? (
+          <div className="space-y-3">
+            {recommendations.map((rec, index) => (
+              <div key={index} className="p-3 border rounded-md">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{rec.title}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{rec.description}</p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    className="ml-2 whitespace-nowrap"
+                    onClick={() => onApplyRecommendation(rec.id)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Alert className="bg-muted/50 border">
+            <Lightbulb className="h-4 w-4" />
+            <AlertTitle>No recommendations at this time</AlertTitle>
+            <AlertDescription>
+              Your storage layout is currently optimized. Check back after making more changes.
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+  );
 };
 
 const StorageMap = () => {
-  const [activeModule, setActiveModule] = useState('module-a');
-  const [zoomLevel, setZoomLevel] = useState(100);
-  const [viewType, setViewType] = useState<'grid' | 'visualization'>('grid');
-  const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
+  const [recommendations, setRecommendations] = useState([]);
+  const [isGeneratingRecommendations, setIsGeneratingRecommendations] = useState(false);
   
-  const [containers, setContainers] = useState<StorageContainer[]>(demoContainers);
-  const [items, setItems] = useState<InventoryItem[]>(demoItems);
-  const [placements, setPlacements] = useState<Record<string, string>>(demoPlacements);
-  
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 20, 200));
+  // Generate AI recommendations
+  const generateRecommendations = () => {
+    setIsGeneratingRecommendations(true);
+    
+    // Simulating API call delay
+    setTimeout(() => {
+      // These would come from an actual AI analysis in a real app
+      const newRecommendations = [
+        {
+          id: 'rec-1',
+          title: 'Optimize Module A Distribution',
+          description: 'Move 2 medical items from Module A to Lab Storage to balance weight distribution and create 15% more space.',
+          actions: [{itemId: 'item-1', sourceZone: 'zone-a', targetZone: 'zone-d'}]
+        },
+        {
+          id: 'rec-2',
+          title: 'Consolidate Life Support Items',
+          description: 'Group all life support items in Module B for improved accessibility during emergencies.',
+          actions: [{itemId: 'item-8', sourceZone: 'zone-c', targetZone: 'zone-b'}]
+        },
+        {
+          id: 'rec-3',
+          title: 'Reduce Cargo Bay Congestion',
+          description: 'Cargo Bay is nearing capacity. Consider relocating non-essential items to Personal Quarters.',
+          actions: [{itemId: 'item-5', sourceZone: 'zone-c', targetZone: 'zone-e'}]
+        }
+      ];
+      
+      setRecommendations(newRecommendations);
+      setIsGeneratingRecommendations(false);
+      
+      toast({
+        title: "Recommendations Generated",
+        description: "AI has analyzed your storage and provided optimization suggestions.",
+      });
+    }, 2000);
   };
   
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 20, 60));
+  // Effect to generate initial recommendations
+  useEffect(() => {
+    generateRecommendations();
+  }, []);
+
+  // Handle dropping an item into a zone
+  const handleItemDrop = (itemId, sourceZoneId, targetZoneId) => {
+    if (sourceZoneId === targetZoneId) return;
+    
+    setInventoryItems(items => 
+      items.map(item => 
+        item.id === itemId 
+          ? { ...item, zoneId: targetZoneId } 
+          : item
+      )
+    );
+    
+    // Generate new recommendations after moving items
+    generateRecommendations();
   };
   
-  const resetZoom = () => {
-    setZoomLevel(100);
+  // Apply an AI recommendation
+  const handleApplyRecommendation = (recId) => {
+    const recommendation = recommendations.find(rec => rec.id === recId);
+    
+    if (recommendation) {
+      // Apply all actions in the recommendation
+      recommendation.actions.forEach(action => {
+        setInventoryItems(items => 
+          items.map(item => 
+            item.id === action.itemId 
+              ? { ...item, zoneId: action.targetZone } 
+              : item
+          )
+        );
+      });
+      
+      // Remove the applied recommendation
+      setRecommendations(recommendations.filter(rec => rec.id !== recId));
+      
+      toast({
+        title: "Recommendation Applied",
+        description: `${recommendation.title} has been implemented.`,
+      });
+    }
+  };
+  
+  // Optimize a specific zone
+  const handleOptimizeZone = (zoneId) => {
+    toast({
+      title: "Zone Optimization",
+      description: `Optimizing ${storageZones.find(z => z.id === zoneId).name}...`,
+    });
+    
+    // In a real app, this would call an AI service for specific zone optimization
+    // For now, we'll just regenerate all recommendations
+    generateRecommendations();
   };
 
-  // Calculate fill percentages for all containers
-  const containerFillPercentages = containers.map(container => {
-    const totalVolume = calculateVolume(container.width_cm, container.depth_cm, container.height_cm);
-    
-    const itemIds = Object.entries(placements)
-      .filter(([_, cId]) => cId === container.container_id)
-      .map(([itemId, _]) => itemId);
-    
-    const usedVolume = itemIds.reduce((total, itemId) => {
-      const item = items.find(i => i.item_id === itemId);
-      if (!item) return total;
-      return total + calculateVolume(item.width_cm, item.depth_cm, item.height_cm);
-    }, 0);
-    
-    return {
-      container_id: container.container_id,
-      fillPercentage: Math.min(100, Math.round((usedVolume / totalVolume) * 100))
-    };
-  });
-  
+  // Group items by zone
+  const itemsByZone = storageZones.map(zone => ({
+    ...zone,
+    items: inventoryItems.filter(item => item.zoneId === zone.id)
+  }));
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Storage Map</h1>
-          <p className="text-muted-foreground mt-1">Visual representation of storage compartments</p>
+    <DndProvider backend={HTML5Backend}>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Storage Map</h2>
+            <p className="text-muted-foreground">
+              Visualize and organize your inventory across storage zones
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={generateRecommendations}
+              className="gap-2"
+              disabled={isGeneratingRecommendations}
+            >
+              <RefreshCw size={16} className={isGeneratingRecommendations ? "animate-spin" : ""} />
+              Refresh Analysis
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className={viewType === 'grid' ? 'bg-muted' : ''}
-            onClick={() => setViewType('grid')}
-          >
-            <Grid size={16} className="mr-2" />
-            Grid View
-          </Button>
-          <Button 
-            variant="outline" 
-            className={viewType === 'visualization' ? 'bg-muted' : ''}
-            onClick={() => setViewType('visualization')}
-          >
-            <ArrowUpRight size={16} className="mr-2" />
-            3D View
-          </Button>
-          <Button className="gap-2">
-            <RotateCw size={16} />
-            Optimize Storage
-          </Button>
+        
+        <Separator />
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {itemsByZone.map(zone => (
+                <StorageZone 
+                  key={zone.id} 
+                  zone={zone} 
+                  items={zone.items} 
+                  onItemDrop={handleItemDrop}
+                  onOptimize={handleOptimizeZone}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <AIRecommendation 
+              recommendations={recommendations}
+              onApplyRecommendation={handleApplyRecommendation}
+              isLoading={isGeneratingRecommendations}
+            />
+            
+            <Card className="mt-6">
+              <CardHeader className="pb-3">
+                <CardTitle>Storage Legend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                    <span className="text-sm">Under 50% - Optimal</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                    <span className="text-sm">50-80% - Moderate</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                    <span className="text-sm">Over 80% - Critical</span>
+                  </div>
+                </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-medium">How to use:</p>
+                  <p className="text-xs text-muted-foreground">• Drag and drop items between zones</p>
+                  <p className="text-xs text-muted-foreground">• Click the refresh icon to optimize a specific zone</p>
+                  <p className="text-xs text-muted-foreground">• Apply AI recommendations for optimal storage</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-
-      {viewType === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-3 space-y-6">
-            <Card className="space-card">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Storage Visualization</CardTitle>
-                    <CardDescription>Select a module to view its storage compartments</CardDescription>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="icon" onClick={handleZoomOut}>
-                      <Minus size={16} />
-                    </Button>
-                    <Badge variant="outline" className="text-xs">
-                      {zoomLevel}%
-                    </Badge>
-                    <Button variant="outline" size="icon" onClick={handleZoomIn}>
-                      <Plus size={16} />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={resetZoom}>
-                      <Maximize2 size={16} />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <StorageModuleSelector activeModule={activeModule} onChange={setActiveModule} />
-                
-                <div className="mt-6 border rounded-md p-1 overflow-hidden bg-muted/30 grid-bg">
-                  <div 
-                    className="transition-transform duration-200 ease-in-out origin-center"
-                    style={{ 
-                      transform: `scale(${zoomLevel / 100})`,
-                      height: '600px'
-                    }}
-                  >
-                    <StorageGrid moduleId={activeModule} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <StorageOptimizationCard />
-          </div>
-          
-          <div className="space-y-6">
-            <Card className="space-card">
-              <CardHeader>
-                <CardTitle>Module Information</CardTitle>
-                <CardDescription>Storage statistics and details</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StorageUtilizationInfo moduleId={activeModule} />
-              </CardContent>
-            </Card>
-            
-            <Card className="space-card">
-              <CardHeader>
-                <CardTitle>Legend</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-sm"></div>
-                  <span className="text-sm">Available Space</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-sm"></div>
-                  <span className="text-sm">Partially Filled</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
-                  <span className="text-sm">Fully Occupied</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-                  <span className="text-sm">High Priority Items</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple-500 rounded-sm"></div>
-                  <span className="text-sm">Scientific Equipment</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-500 rounded-sm"></div>
-                  <span className="text-sm">Personal Items</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="space-card">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  <Grid size={16} className="mr-2" />
-                  View Occupied Spaces
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <RotateCw size={16} className="mr-2" />
-                  Run Optimization
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <ArrowUpRight size={16} className="mr-2" />
-                  Detailed View
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>3D Storage Containers</CardTitle>
-                  <CardDescription>Visual representation of storage utilization</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    {containers.map(container => {
-                      const { fillPercentage } = containerFillPercentages.find(
-                        c => c.container_id === container.container_id
-                      ) || { fillPercentage: 0 };
-                      
-                      return (
-                        <div 
-                          key={container.container_id} 
-                          className="flex flex-col items-center"
-                        >
-                          <StorageCube 
-                            container={container}
-                            fillPercentage={fillPercentage}
-                            isSelected={selectedContainer === container.container_id}
-                            onClick={() => setSelectedContainer(
-                              selectedContainer === container.container_id ? null : container.container_id
-                            )}
-                          />
-                          <div className="text-xs mt-1 text-center">
-                            <div>{container.zone}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Storage Zones</CardTitle>
-                  <CardDescription>Storage utilization by location</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {Array.from(new Set(containers.map(c => c.zone))).map(zone => {
-                      const zoneContainers = containers.filter(c => c.zone === zone);
-                      const totalContainers = zoneContainers.length;
-                      
-                      const zoneFills = containerFillPercentages
-                        .filter(c => zoneContainers.some(zc => zc.container_id === c.container_id))
-                        .map(c => c.fillPercentage);
-                      
-                      const averageFill = zoneFills.length > 0 
-                        ? Math.round(zoneFills.reduce((a, b) => a + b, 0) / zoneFills.length) 
-                        : 0;
-                      
-                      return (
-                        <div key={zone} className="p-3 border rounded">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{zone}</h3>
-                            <Badge className={
-                              averageFill > 80 ? 'bg-red-600' :
-                              averageFill > 50 ? 'bg-yellow-600' :
-                              'bg-green-600'
-                            }>
-                              {averageFill}% Full
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {totalContainers} container{totalContainers !== 1 ? 's' : ''}
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-2 mt-2">
-                            <div 
-                              className={`h-2 rounded-full ${
-                                averageFill > 80 ? 'bg-red-600' :
-                                averageFill > 50 ? 'bg-yellow-600' :
-                                'bg-green-600'
-                              }`}
-                              style={{ width: `${averageFill}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Storage Details</CardTitle>
-              <CardDescription>View detailed storage information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <StorageVisualization 
-                containerId={selectedContainer || undefined}
-                containers={containers}
-                items={items}
-                placements={placements}
-              />
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+    </DndProvider>
   );
 };
 

@@ -1,141 +1,140 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 
-// Define the shape of user data
 interface User {
   id: string;
+  name: string;
   email: string;
-  name?: string;
+  role: 'admin' | 'engineer' | 'astronaut' | 'viewer';
   avatar?: string;
-  role?: string;
 }
 
-// Define the AuthContext shape
 interface AuthContextType {
-  isAuthenticated: boolean;
   user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  isLoading: boolean;
+  signOut: () => void;
 }
 
-// Create the context with default values
-const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  user: null,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
-  isLoading: true,
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth Provider component
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Check for existing auth on mount
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const checkAuth = () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          // Ensure the user object has the required properties
-          setUser({
-            id: parsedUser.id || '',
-            email: parsedUser.email || '',
-            name: parsedUser.name || parsedUser.email?.split('@')[0] || '',
-            avatar: parsedUser.avatar || '',
-            role: parsedUser.role || 'viewer'
-          });
-        } catch (error) {
-          localStorage.removeItem('user');
-        }
+    // Check if user is already logged in
+    const storedUser = localStorage.getItem('orbitNexusUser');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem('orbitNexusUser');
       }
-      setIsLoading(false);
-    };
-    
-    checkAuth();
+    }
+    setIsLoading(false);
   }, []);
-  
-  // Auth methods
+
   const signIn = async (email: string, password: string) => {
-    // For demo purposes, we'll just simulate authentication
-    // In a real app, you would validate against a backend
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock validation - in a real app, this would be server-side
-    if (email && password.length >= 6) {
-      // Include role and avatar in the mock user
-      const newUser = { 
-        id: Date.now().toString(), 
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For demo purposes, accept any email/password combo
+      // In a real app, you would validate against a backend
+      const mockUser: User = {
+        id: '1',
+        name: 'Demo User',
         email,
-        name: email.split('@')[0],
-        role: 'engineer', // Default role
-        avatar: '' // Empty string for avatar
+        role: 'engineer',
+        avatar: '',
       };
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
+      
+      setUser(mockUser);
+      localStorage.setItem('orbitNexusUser', JSON.stringify(mockUser));
+      
+      toast({
+        title: 'Welcome back!',
+        description: 'You have successfully signed in.',
+      });
+      
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw new Error('Invalid email or password');
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    setIsLoading(false);
-    throw new Error('Invalid credentials');
   };
-  
+
   const signUp = async (email: string, password: string) => {
-    // Similar to signIn, but for creating a new account
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock validation
-    if (email && password.length >= 6) {
-      // Include role and avatar in the mock user
-      const newUser = { 
-        id: Date.now().toString(), 
-        email,
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For demo purposes, create a new user with any email/password
+      const newUser: User = {
+        id: Date.now().toString(),
         name: email.split('@')[0],
-        role: 'engineer', // Default role
-        avatar: '' // Empty string for avatar
+        email,
+        role: 'astronaut',
+        avatar: '',
       };
-      localStorage.setItem('user', JSON.stringify(newUser));
+      
       setUser(newUser);
+      localStorage.setItem('orbitNexusUser', JSON.stringify(newUser));
+      
+      toast({
+        title: 'Account created!',
+        description: 'Your account has been successfully created.',
+      });
+      
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw new Error('Failed to create account');
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    setIsLoading(false);
-    throw new Error('Invalid credentials. Password must be at least 6 characters.');
   };
-  
-  const signOut = async () => {
-    localStorage.removeItem('user');
+
+  const signOut = () => {
     setUser(null);
+    localStorage.removeItem('orbitNexusUser');
+    navigate('/signin');
+    toast({
+      title: 'Signed out',
+      description: 'You have been successfully signed out.',
+    });
   };
-  
+
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user,
         user,
+        isAuthenticated: !!user,
+        isLoading,
         signIn,
         signUp,
         signOut,
-        isLoading,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-// Hook for using the auth context
-export const useAuth = () => useContext(AuthContext);
