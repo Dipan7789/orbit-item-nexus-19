@@ -41,7 +41,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = localStorage.getItem('user');
       if (userData) {
         try {
-          setUser(JSON.parse(userData));
+          const parsedUser = JSON.parse(userData);
+          // Ensure the user object has the required properties
+          setUser({
+            id: parsedUser.id || '',
+            email: parsedUser.email || '',
+            name: parsedUser.name || parsedUser.email?.split('@')[0] || '',
+            avatar: parsedUser.avatar || '',
+            role: parsedUser.role || 'viewer'
+          });
         } catch (error) {
           localStorage.removeItem('user');
         }

@@ -7,6 +7,7 @@ import { Grid, Package, FileUp, Search, BarChart4, ArrowUp, ArrowDown } from 'lu
 import StorageUtilizationChart from '@/components/dashboard/StorageUtilizationChart';
 import RecentActivityList from '@/components/dashboard/RecentActivityList';
 import PriorityItems from '@/components/dashboard/PriorityItems';
+import ExpiryTracker from '@/components/inventory/ExpiryTracker';
 
 const Dashboard = () => {
   return (
@@ -121,6 +122,9 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* New ExpiryTracker component */}
+      <ExpiryTracker />
 
       <Card className="space-card">
         <CardHeader>

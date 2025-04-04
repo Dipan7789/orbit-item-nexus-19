@@ -1,26 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/context/AuthContext';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   User, 
   Bell, 
   Shield, 
   Database, 
   MonitorSmartphone, 
-  Palette, 
-  Settings as SettingsIcon, 
-  Save, 
-  RefreshCcw,
-  Trash2
+  Palette
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 import ProfileSettings from '@/components/settings/ProfileSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
@@ -30,9 +21,23 @@ import DataSettings from '@/components/settings/DataSettings';
 import DeviceSettings from '@/components/settings/DeviceSettings';
 
 const Settings = () => {
-  const { toast } = useToast();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || "profile");
+  
+  // Update the URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
+  
+  // Update local state when URL changes
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
 
   return (
     <div className="space-y-6">
@@ -41,7 +46,7 @@ const Settings = () => {
         <p className="text-muted-foreground mt-1">Manage your account settings and preferences</p>
       </div>
       
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <Card>
           <CardContent className="py-4">
             <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto">

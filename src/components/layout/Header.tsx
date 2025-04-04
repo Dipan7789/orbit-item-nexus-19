@@ -1,22 +1,19 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, Search, Bell, User, LogOut, Settings } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, Bell, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuGroup, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -24,103 +21,137 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-
-  const handleSignOut = () => {
-    signOut();
-    toast({
-      title: "Signed out successfully",
-      description: "You have been signed out of your account."
-    });
-    navigate('/signin');
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
+  
+  // Add a fallback for user details
+  const userName = user?.name || 'User';
+  const userInitials = userName ? userName.charAt(0).toUpperCase() : 'U';
+  
   return (
-    <header className="border-b border-border px-4 py-3 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-muted-foreground">
-            <Menu size={20} />
-          </Button>
-          <div className={`relative hidden md:block max-w-sm transition-all duration-300 ${isSearchFocused ? 'w-[400px]' : 'w-[300px]'}`}>
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="Search inventory..." 
-              className="pl-9 bg-background border-space-blue/20 focus:border-primary/50"
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-            />
-          </div>
+    <header className="border-b sticky top-0 z-10 bg-background">
+      <div className="flex h-16 items-center px-4 gap-4">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
+          <Menu size={20} />
+        </Button>
+        
+        <div className="flex-1 md:flex-initial md:w-64">
+          <form>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search inventory..."
+                className="w-full pl-8 bg-background"
+              />
+            </div>
+          </form>
         </div>
         
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" className="hidden md:flex gap-2 text-muted-foreground hover:text-foreground border-space-blue/20">
-            <Badge className="bg-space-bright-blue text-white h-5 w-5 flex items-center justify-center rounded-full p-0">
-              3
-            </Badge>
-            Priority Items
-          </Button>
-          
-          <Button variant="ghost" size="icon" className="text-muted-foreground relative">
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary"></span>
-          </Button>
+        <div className="ml-auto flex items-center gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell size={20} />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">3</Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[320px]">
+              <div className="px-4 py-3 font-medium">Notifications</div>
+              <DropdownMenuSeparator />
+              <div className="max-h-[300px] overflow-y-auto">
+                <NotificationItem 
+                  title="Inventory Alert"
+                  description="Medical supplies are running low"
+                  time="5 minutes ago"
+                  isUnread
+                />
+                <NotificationItem 
+                  title="New Item Added"
+                  description="Hydroponics sensor equipment has been added"
+                  time="2 hours ago"
+                  isUnread
+                />
+                <NotificationItem 
+                  title="System Update"
+                  description="Inventory system update completed successfully"
+                  time="Yesterday"
+                  isUnread
+                />
+                <NotificationItem 
+                  title="Container Optimized"
+                  description="Storage container B12 has been reorganized"
+                  time="2 days ago"
+                />
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="justify-center text-center text-sm cursor-pointer">
+                View all notifications
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8 border border-space-blue/30">
-                  <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {user?.name ? getInitials(user.name) : 'U'}
-                  </AvatarFallback>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar || ''} alt={userName} />
+                  <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mt-1 bg-card/95 backdrop-blur-sm border-space-blue/30" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email || 'No email'}
-                  </p>
+            <DropdownMenuContent align="end">
+              <div className="flex items-center justify-start gap-2 p-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar || ''} alt={userName} />
+                  <AvatarFallback>{userInitials}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col space-y-0.5">
+                  <p className="text-sm font-medium">{userName}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || ''}</p>
                 </div>
-              </DropdownMenuLabel>
+              </div>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link to="/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/settings?tab=profile">Profile</Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="cursor-pointer text-destructive focus:text-destructive"
-                onClick={handleSignOut}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+              <DropdownMenuItem onClick={() => signOut()}>
+                Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
     </header>
+  );
+};
+
+interface NotificationItemProps {
+  title: string;
+  description: string;
+  time: string;
+  isUnread?: boolean;
+}
+
+const NotificationItem: React.FC<NotificationItemProps> = ({
+  title,
+  description,
+  time,
+  isUnread = false
+}) => {
+  return (
+    <div className={`px-4 py-3 flex gap-3 ${isUnread ? 'bg-accent' : ''}`}>
+      <div className="rounded-full h-2 w-2 bg-primary mt-2 shrink-0">
+        {isUnread && <div className="h-full w-full" />}
+      </div>
+      <div className="space-y-1">
+        <p className="text-sm font-medium leading-none">{title}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground">{time}</p>
+      </div>
+    </div>
   );
 };
 
