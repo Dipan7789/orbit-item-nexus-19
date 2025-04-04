@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,23 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@/types/auth';
 
 const ProfileSettings = () => {
   const { user } = useAuth();
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState(user?.email || '');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar || null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  
-  // Update local state when user data changes
-  useEffect(() => {
-    if (user) {
-      setName(user.name || '');
-      setEmail(user.email || '');
-      setAvatarUrl(user.avatar || null);
-    }
-  }, [user]);
 
   // Handle file upload for profile picture
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +63,6 @@ const ProfileSettings = () => {
         description: error.message || "There was an error uploading your avatar",
         variant: "destructive",
       });
-      console.error("Upload error:", error);
     } finally {
       setUploading(false);
     }
@@ -104,7 +93,6 @@ const ProfileSettings = () => {
         description: error.message || "There was an error updating your profile",
         variant: "destructive",
       });
-      console.error("Update error:", error);
     }
   };
 

@@ -52,10 +52,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <AuthProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <TooltipProvider>
+          <TooltipProvider>
+            <BrowserRouter>
               <Routes>
                 {/* Auth routes */}
                 <Route path="/signin" element={<SignIn />} />
@@ -79,10 +79,10 @@ const App = () => {
               </Routes>
               <Toaster />
               <Sonner />
-            </TooltipProvider>
-          </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
         </ThemeProvider>
-      </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

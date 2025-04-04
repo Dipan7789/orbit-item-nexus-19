@@ -23,8 +23,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const { user, signOut } = useAuth();
   
   // Add a fallback for user details
-  const userName = user?.name || user?.email?.split('@')[0] || 'User';
-  const userInitials = userName.charAt(0).toUpperCase();
+  const userName = user?.name || 'User';
+  const userInitials = userName ? userName.charAt(0).toUpperCase() : 'U';
   
   return (
     <header className="border-b sticky top-0 z-10 bg-background">
