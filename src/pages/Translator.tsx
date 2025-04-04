@@ -1,10 +1,19 @@
 
 import React from 'react';
 import FutureFeature from './FutureFeature';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Translator = () => {
+  const isMobile = useIsMobile();
+  
   return (
-    <FutureFeature feature="Multilingual Translator Layer" />
+    <FutureFeature 
+      feature="Multilingual Translator" 
+      description={isMobile ? 
+        "Real-time translation across languages" : 
+        "A real-time translation layer for inventory labels, logs, and notes"
+      }
+    />
   );
 };
 
