@@ -200,7 +200,7 @@ const Inventory = () => {
                         {item.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>{item.lastUsed}</TableCell>
+                    <TableCell>{typeof item.lastUsed === 'string' ? item.lastUsed : item.lastUsed.toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <InventoryActions 
                         itemId={item.id} 

@@ -23,6 +23,7 @@ export const IssViewer: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [autoRotate, setAutoRotate] = useState(true);
+  const [showPlanets, setShowPlanets] = useState(true);
   
   // Simulate loading progress
   useEffect(() => {
@@ -83,7 +84,7 @@ export const IssViewer: React.FC = () => {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [autoRotate, isDragging, isLoading, rotationSpeed]);
+  }, [autoRotate, isDragging, isLoading, rotationSpeed, showPlanets]);
   
   const initializeIssViewer = () => {
     renderIss();
@@ -120,6 +121,78 @@ export const IssViewer: React.FC = () => {
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
+    }
+    
+    // Draw Sun (if planets are shown)
+    if (showPlanets) {
+      const sunX = canvas.width * 0.1;
+      const sunY = canvas.height * 0.1;
+      const sunRadius = 40;
+      
+      // Sun glow
+      const sunGlow = ctx.createRadialGradient(
+        sunX, sunY, 0,
+        sunX, sunY, sunRadius * 2
+      );
+      sunGlow.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
+      sunGlow.addColorStop(0.5, 'rgba(255, 150, 20, 0.3)');
+      sunGlow.addColorStop(1, 'rgba(255, 100, 0, 0)');
+      
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Sun itself
+      const sunGradient = ctx.createRadialGradient(
+        sunX, sunY, 0,
+        sunX, sunY, sunRadius
+      );
+      sunGradient.addColorStop(0, '#FFF9C4');
+      sunGradient.addColorStop(0.8, '#FF9800');
+      sunGradient.addColorStop(1, '#FF5722');
+      
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw planets
+      const planets = [
+        { name: 'Mercury', distance: 120, radius: 5, color: '#A9A9A9', speed: 0.02 },
+        { name: 'Venus', distance: 170, radius: 8, color: '#D4A76A', speed: 0.015 },
+        { name: 'Earth', distance: 230, radius: 10, color: '#4B6CB7', speed: 0.01 },
+        { name: 'Mars', distance: 280, radius: 7, color: '#C64F3C', speed: 0.008 }
+      ];
+      
+      const time = Date.now() * 0.001;
+      
+      planets.forEach(planet => {
+        const angle = time * planet.speed;
+        const planetX = sunX + Math.cos(angle) * planet.distance;
+        const planetY = sunY + Math.sin(angle) * planet.distance;
+        
+        // Draw orbit path
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, planet.distance, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw planet
+        ctx.fillStyle = planet.color;
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, planet.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Planet name only if close enough
+        const distanceToCenter = Math.sqrt(Math.pow(planetX - canvas.width/2, 2) + Math.pow(planetY - canvas.height/2, 2));
+        if (distanceToCenter < canvas.width * 0.4) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '10px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(planet.name, planetX, planetY + planet.radius + 15);
+        }
+      });
     }
     
     // Draw Earth
@@ -245,7 +318,7 @@ export const IssViewer: React.FC = () => {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isLoading, rotation]);
+  }, [isLoading, rotation, showPlanets]);
   
   // Mouse event handlers for interactive rotation
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -289,6 +362,10 @@ export const IssViewer: React.FC = () => {
   
   const handleToggleAutoRotate = () => {
     setAutoRotate(!autoRotate);
+  };
+  
+  const handleTogglePlanets = () => {
+    setShowPlanets(!showPlanets);
   };
   
   const handleScreenshot = () => {
@@ -382,6 +459,15 @@ export const IssViewer: React.FC = () => {
               onClick={handleToggleAutoRotate}
             >
               {autoRotate ? "Auto-Rotation: ON" : "Auto-Rotation: OFF"}
+            </Button>
+            
+            <Button
+              size="sm"
+              variant={showPlanets ? "default" : "outline"}
+              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors w-full"
+              onClick={handleTogglePlanets}
+            >
+              {showPlanets ? "Planets: VISIBLE" : "Planets: HIDDEN"}
             </Button>
           </div>
           

@@ -1,15 +1,61 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Grid, Package, FileUp, Search, BarChart4, ArrowUp, ArrowDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Grid, Package, Search, BarChart4, ArrowUp, ArrowDown } from 'lucide-react';
 import StorageUtilizationChart from '@/components/dashboard/StorageUtilizationChart';
 import RecentActivityList from '@/components/dashboard/RecentActivityList';
 import PriorityItems from '@/components/dashboard/PriorityItems';
 import ExpiryTracker from '@/components/inventory/ExpiryTracker';
+import { dummyInventoryData } from '@/data/dummyData';
+import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
+import { InventoryItem } from '@/types/inventory';
+import { useToast } from '@/components/ui/use-toast';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [inventoryItems, setInventoryItems] = useState(dummyInventoryData);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
+
+  // Handle search functionality
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/inventory?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  // Handle add item
+  const handleAddItem = () => {
+    setCurrentItem(undefined);
+    setDialogOpen(true);
+  };
+
+  // Save an item
+  const handleSaveItem = (item: InventoryItem) => {
+    setInventoryItems(prev => [...prev, item]);
+    toast({
+      title: "Item Added",
+      description: `${item.name} has been added to the inventory.`,
+    });
+  };
+
+  // Navigate to details
+  const handleItemClick = (itemId: string) => {
+    navigate(`/inventory?highlight=${itemId}`);
+  };
+
+  // Navigate to analytics
+  const handleAnalyticsClick = () => {
+    navigate('/analytics');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -18,11 +64,22 @@ const Dashboard = () => {
           <p className="text-muted-foreground mt-1">Welcome back, Astronaut. Here's your storage overview.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Search size={16} />
-            Quick Find
-          </Button>
-          <Button className="gap-2">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Quick Find"
+                className="pl-9 w-64"
+              />
+            </div>
+            <Button type="submit" variant="outline">
+              <Search size={16} className="mr-2" />
+              Search
+            </Button>
+          </form>
+          <Button className="gap-2" onClick={handleAddItem}>
             <Package size={16} />
             Add Item
           </Button>
@@ -38,7 +95,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <div className="text-3xl font-bold">247</div>
+                <div className="text-3xl font-bold">{inventoryItems.length}</div>
                 <div className="text-sm text-muted-foreground flex items-center gap-1">
                   <ArrowUp size={14} className="text-green-500" />
                   <span className="text-green-500">+12</span> since last supply mission
@@ -99,9 +156,9 @@ const Dashboard = () => {
                 <CardTitle>Storage Utilization</CardTitle>
                 <CardDescription>Usage across storage compartments</CardDescription>
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleAnalyticsClick}>
                 <BarChart4 size={16} className="mr-2" />
-                Details
+                Analytics
               </Button>
             </div>
           </CardHeader>
@@ -117,7 +174,7 @@ const Dashboard = () => {
               <CardDescription>Items requiring immediate attention</CardDescription>
             </CardHeader>
             <CardContent>
-              <PriorityItems />
+              <PriorityItems onItemClick={handleItemClick} />
             </CardContent>
           </Card>
         </div>
@@ -133,7 +190,7 @@ const Dashboard = () => {
               <CardTitle>Recent Activity</CardTitle>
               <CardDescription>Latest inventory operations</CardDescription>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => navigate('/inventory')}>
               View All
             </Button>
           </div>
@@ -142,6 +199,15 @@ const Dashboard = () => {
           <RecentActivityList />
         </CardContent>
       </Card>
+
+      {/* Add Item Dialog */}
+      <InventoryItemDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        item={currentItem}
+        onSave={handleSaveItem}
+        isNewItem={true}
+      />
     </div>
   );
 };
