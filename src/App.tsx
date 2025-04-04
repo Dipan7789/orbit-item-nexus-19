@@ -22,6 +22,9 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import IssGuidelines from "./pages/IssGuidelines";
 
+// Future Features Placeholder Page
+import FutureFeature from "./pages/FutureFeature";
+
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -76,6 +79,15 @@ const App = () => {
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/iss-guidelines" element={<IssGuidelines />} />
                   <Route path="/settings" element={<Settings />} />
+                  
+                  {/* Future Feature Routes */}
+                  <Route path="/instant-navigation" element={<FutureFeature feature="Instant Navigation Panel" />} />
+                  <Route path="/spoilage-simulation" element={<FutureFeature feature="Spoilage Simulation System" />} />
+                  <Route path="/smart-tagging" element={<FutureFeature feature="Smart Tagging Tool" />} />
+                  <Route path="/zoomable-view" element={<FutureFeature feature="Zoomable 3D View" />} />
+                  <Route path="/translator" element={<FutureFeature feature="Multilingual Translator Layer" />} />
+                  <Route path="/transfer-assistant" element={<FutureFeature feature="Visual Item Transfer Assistant" />} />
+                  <Route path="/event-predictor" element={<FutureFeature feature="Space Event Predictor" />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
