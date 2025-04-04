@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,34 +17,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   
-  const { signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  const { signIn, signUp, isLoading } = useAuth();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
     
     if (type === 'signup' && password !== confirmPassword) {
       setError('Passwords do not match');
-      setIsLoading(false);
       return;
     }
     
     try {
       if (type === 'signin') {
         await signIn(email, password);
-        navigate('/');
       } else {
         await signUp(email, password);
-        navigate('/');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -125,16 +117,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           {type === 'signin' ? (
             <>
               Don't have an account?{' '}
-              <a href="/signup" className="text-primary hover:underline">
+              <Link to="/signup" className="text-primary hover:underline">
                 Sign up
-              </a>
+              </Link>
             </>
           ) : (
             <>
               Already have an account?{' '}
-              <a href="/signin" className="text-primary hover:underline">
+              <Link to="/signin" className="text-primary hover:underline">
                 Sign in
-              </a>
+              </Link>
             </>
           )}
         </p>

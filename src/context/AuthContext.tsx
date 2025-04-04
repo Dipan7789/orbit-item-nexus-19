@@ -1,8 +1,8 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { User, extendUser } from '@/types/auth';
 
@@ -23,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -37,11 +38,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             title: "Signed in successfully",
             description: "Welcome back to Space Station Storage"
           });
+          
+          // Only redirect if we're on an auth page
+          if (location.pathname === '/signin' || location.pathname === '/signup') {
+            navigate('/');
+          }
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out successfully",
             description: "You have been signed out"
           });
+          navigate('/signin');
         }
       }
     );
@@ -56,9 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate, location.pathname]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -67,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
       
-      navigate('/');
+      // Navigate is now handled by the auth state change listener
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -77,9 +84,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signUp({ email, password });
@@ -93,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Please check your email to confirm your account"
       });
       
+      // Navigate to sign in page after successful signup
       navigate('/signin');
     } catch (error: any) {
       toast({
@@ -103,13 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       setIsLoading(true);
       await supabase.auth.signOut();
-      navigate('/signin');
+      // Navigate is now handled by the auth state change listener
     } catch (error: any) {
       toast({
         title: "Sign out failed",
@@ -119,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

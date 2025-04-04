@@ -53,8 +53,8 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider>
+        <ThemeProvider>
+          <AuthProvider>
             <TooltipProvider>
               <Routes>
                 {/* Auth routes */}
@@ -80,8 +80,8 @@ const App = () => {
               <Toaster />
               <Sonner />
             </TooltipProvider>
-          </ThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
