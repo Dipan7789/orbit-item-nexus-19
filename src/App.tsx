@@ -22,6 +22,11 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import IssGuidelines from "./pages/IssGuidelines";
 
+// New Doraemon-inspired feature pages
+import InstantNavigation from "./pages/InstantNavigation";
+import SpoilageSimulation from "./pages/SpoilageSimulation";
+import SmartTagging from "./pages/SmartTagging";
+
 // Future Features Placeholder Page
 import FutureFeature from "./pages/FutureFeature";
 
@@ -80,10 +85,12 @@ const App = () => {
                   <Route path="/iss-guidelines" element={<IssGuidelines />} />
                   <Route path="/settings" element={<Settings />} />
                   
+                  {/* Doraemon-inspired Feature Routes - Now Implemented */}
+                  <Route path="/instant-navigation" element={<InstantNavigation />} />
+                  <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
+                  <Route path="/smart-tagging" element={<SmartTagging />} />
+                  
                   {/* Future Feature Routes */}
-                  <Route path="/instant-navigation" element={<FutureFeature feature="Instant Navigation Panel" />} />
-                  <Route path="/spoilage-simulation" element={<FutureFeature feature="Spoilage Simulation System" />} />
-                  <Route path="/smart-tagging" element={<FutureFeature feature="Smart Tagging Tool" />} />
                   <Route path="/zoomable-view" element={<FutureFeature feature="Zoomable 3D View" />} />
                   <Route path="/translator" element={<FutureFeature feature="Multilingual Translator Layer" />} />
                   <Route path="/transfer-assistant" element={<FutureFeature feature="Visual Item Transfer Assistant" />} />
