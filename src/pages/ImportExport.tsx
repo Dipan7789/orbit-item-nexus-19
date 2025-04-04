@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -68,26 +67,26 @@ const ImportExport = () => {
 
     // Create results data
     const placementResults = items
-      .filter(item => placements[item.item_id])
+      .filter(item => placements[item.item_id || item.id])
       .map(item => ({
-        item_id: item.item_id,
+        item_id: item.item_id || item.id,
         name: item.name,
-        container_id: placements[item.item_id],
-        container_zone: containers.find(c => c.container_id === placements[item.item_id])?.zone || '',
+        container_id: placements[item.item_id || item.id],
+        container_zone: containers.find(c => c.container_id === placements[item.item_id || item.id])?.zone || '',
         priority: item.priority,
         preferred_zone: item.preferred_zone,
-        dimensions: `${item.width_cm}x${item.depth_cm}x${item.height_cm} cm`,
-        mass_kg: item.mass_kg
+        dimensions: `${item.width_cm || 0}x${item.depth_cm || 0}x${item.height_cm || 0} cm`,
+        mass_kg: item.mass_kg || 0
       }));
 
     const unplacedResults = unplacedItems.map(item => ({
-      item_id: item.item_id,
+      item_id: item.item_id || item.id,
       name: item.name,
       reason: "No suitable container found",
       priority: item.priority,
       preferred_zone: item.preferred_zone,
-      dimensions: `${item.width_cm}x${item.depth_cm}x${item.height_cm} cm`,
-      mass_kg: item.mass_kg
+      dimensions: `${item.width_cm || 0}x${item.depth_cm || 0}x${item.height_cm || 0} cm`,
+      mass_kg: item.mass_kg || 0
     }));
 
     const results = {

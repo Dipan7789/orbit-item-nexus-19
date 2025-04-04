@@ -24,8 +24,6 @@ const calculateFillPercentage = (
   items: InventoryItem[], 
   placements: Record<string, string>
 ): number => {
-  if (!container.items || container.items.length === 0) return 0;
-  
   const containerVolume = container.width_cm * container.depth_cm * container.height_cm;
   
   const itemIds = Object.entries(placements)
@@ -33,9 +31,9 @@ const calculateFillPercentage = (
     .map(([itemId, _]) => itemId);
   
   const itemsVolume = itemIds.reduce((total, itemId) => {
-    const item = items.find(i => i.item_id === itemId);
+    const item = items.find(i => (i.item_id || i.id) === itemId);
     if (!item) return total;
-    return total + (item.width_cm * item.depth_cm * item.height_cm);
+    return total + ((item.width_cm || 0) * (item.depth_cm || 0) * (item.height_cm || 0));
   }, 0);
   
   return Math.min(100, Math.round((itemsVolume / containerVolume) * 100));
@@ -85,7 +83,7 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
       .filter(([_, cId]) => cId === selectedContainer.container_id)
       .map(([itemId, _]) => itemId);
     
-    const containerItems = items.filter(item => itemIds.includes(item.item_id));
+    const containerItems = items.filter(item => itemIds.includes(item.item_id || item.id));
     setContainerItems(containerItems);
   }, [selectedContainer, items, placements]);
   
@@ -174,28 +172,29 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
                     <h4 className="text-sm font-medium mb-2">Stored Items</h4>
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                       {containerItems.map(item => (
-                        <div key={item.item_id} className="p-3 border rounded bg-white">
+                        <div key={item.item_id || item.id} className="p-3 border rounded bg-white">
                           <div className="flex justify-between items-start">
                             <div className="font-medium">{item.name}</div>
                             <Badge 
                               className={
-                                item.priority > 7 ? 'bg-red-600' : 
-                                item.priority > 4 ? 'bg-yellow-600' : 
-                                'bg-green-600'
+                                typeof item.priority === 'number' ? 
+                                  (Number(item.priority) > 7 ? 'bg-red-600' : 
+                                  Number(item.priority) > 4 ? 'bg-yellow-600' : 
+                                  'bg-green-600') : 'bg-blue-600'
                               }
                             >
                               Priority {item.priority}
                             </Badge>
                           </div>
                           <div className="text-xs text-gray-600 mt-1">
-                            ID: {item.item_id}
+                            ID: {item.item_id || item.id}
                           </div>
                           <div className="text-xs text-gray-600">
-                            {item.width_cm}×{item.depth_cm}×{item.height_cm} cm • {item.mass_kg} kg
+                            {item.width_cm || 0}×{item.depth_cm || 0}×{item.height_cm || 0} cm • {item.mass_kg || 0} kg
                           </div>
-                          {item.expiry_date && (
+                          {(item.expiryDate || item.expiry_date) && (
                             <div className="text-xs text-red-600 mt-1">
-                              Expires: {item.expiry_date}
+                              Expires: {item.expiryDate || item.expiry_date}
                             </div>
                           )}
                         </div>

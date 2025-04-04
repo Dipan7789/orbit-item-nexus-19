@@ -29,9 +29,13 @@ const PackingEfficiencyCard: React.FC<PackingEfficiencyCardProps> = ({
     
     // Calculate used volumes
     Object.entries(placements).forEach(([itemId, containerId]) => {
-      const item = items.find(i => i.item_id === itemId);
+      const item = items.find(i => (i.item_id || i.id) === itemId);
       if (item) {
-        const itemVolume = calculateVolume(item.width_cm, item.depth_cm, item.height_cm);
+        const itemVolume = calculateVolume(
+          item.width_cm || 0, 
+          item.depth_cm || 0, 
+          item.height_cm || 0
+        );
         usedVolumes[containerId] = (usedVolumes[containerId] || 0) + itemVolume;
       }
     });

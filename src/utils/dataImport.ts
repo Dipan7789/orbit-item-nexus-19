@@ -1,4 +1,3 @@
-
 import { InventoryItem, StorageContainer } from '../types/inventory';
 
 // Process CSV text to extract inventory items
@@ -176,4 +175,40 @@ export const validateStorageContainer = (container: any, rowIndex: number): Arra
   });
   
   return errors;
+};
+
+// Export data to CSV format
+export const exportToCSV = (data: any[]): string => {
+  if (!data || data.length === 0) return '';
+  
+  // Get headers from the first item
+  const headers = Object.keys(data[0]);
+  
+  // Create CSV header row
+  let csv = headers.join(',') + '\n';
+  
+  // Add data rows
+  data.forEach(item => {
+    const row = headers.map(header => {
+      const value = item[header];
+      
+      // Handle different value types
+      if (value === null || value === undefined) {
+        return '';
+      } else if (typeof value === 'object') {
+        return JSON.stringify(value).replace(/"/g, '""');
+      } else {
+        return String(value).replace(/"/g, '""');
+      }
+    });
+    
+    csv += row.join(',') + '\n';
+  });
+  
+  return csv;
+};
+
+// Export data to JSON format
+export const exportToJSON = (data: any): string => {
+  return JSON.stringify(data, null, 2);
 };
