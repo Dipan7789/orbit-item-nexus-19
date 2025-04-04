@@ -93,3 +93,85 @@ export const itemFitsContainer = (
     reason: "Item dimensions don't fit container orientation" 
   };
 };
+
+// Implement the findOptimalPlacement function
+export const findOptimalPlacement = (
+  items: InventoryItem[],
+  containers: StorageContainer[]
+): { placements: Record<string, string>; unplaced: InventoryItem[] } => {
+  // Calculate container volumes for later use
+  const containerVolumes: Record<string, number> = {};
+  containers.forEach(container => {
+    containerVolumes[container.container_id] = calculateVolume(
+      container.width_cm,
+      container.depth_cm,
+      container.height_cm
+    );
+  });
+
+  // Sort items by priority (higher first) and then by volume (larger first)
+  const sortedItems = [...items].sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return b.priority - a.priority; // Higher priority first
+    }
+    
+    const volumeA = calculateVolume(a.width_cm, a.depth_cm, a.height_cm);
+    const volumeB = calculateVolume(b.width_cm, b.depth_cm, b.height_cm);
+    return volumeB - volumeA; // Larger items first
+  });
+
+  // Track container remaining volume
+  const containerRemaining = { ...containerVolumes };
+  
+  // Initialize results
+  const placements: Record<string, string> = {};
+  const unplaced: InventoryItem[] = [];
+
+  // Place items in containers
+  sortedItems.forEach(item => {
+    const itemVolume = calculateVolume(item.width_cm, item.depth_cm, item.height_cm);
+    
+    // Find the best container for this item
+    let bestContainer: StorageContainer | null = null;
+    let bestFit = Infinity; // Lower is better (less wasted space)
+    
+    // First try to place in the preferred zone
+    const preferredContainers = containers.filter(c => c.zone === item.preferred_zone);
+    for (const container of preferredContainers) {
+      const fits = itemFitsContainer(item, container);
+      if (fits.fits && containerRemaining[container.container_id] >= itemVolume) {
+        const wastedSpace = containerRemaining[container.container_id] - itemVolume;
+        if (wastedSpace < bestFit) {
+          bestFit = wastedSpace;
+          bestContainer = container;
+        }
+      }
+    }
+    
+    // If no container in preferred zone, try others
+    if (!bestContainer) {
+      for (const container of containers) {
+        if (container.zone === item.preferred_zone) continue; // Already checked
+        
+        const fits = itemFitsContainer(item, container);
+        if (fits.fits && containerRemaining[container.container_id] >= itemVolume) {
+          const wastedSpace = containerRemaining[container.container_id] - itemVolume;
+          if (wastedSpace < bestFit) {
+            bestFit = wastedSpace;
+            bestContainer = container;
+          }
+        }
+      }
+    }
+    
+    // Place item or mark as unplaced
+    if (bestContainer) {
+      placements[item.item_id] = bestContainer.container_id;
+      containerRemaining[bestContainer.container_id] -= itemVolume;
+    } else {
+      unplaced.push(item);
+    }
+  });
+
+  return { placements, unplaced };
+};
