@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { IssViewer } from '@/components/iss/IssViewer';
 import { SpaceMap } from '@/components/iss/SpaceMap';
+import IssDoraemonFeatures from '@/components/iss/IssDoraemonFeatures';
 
 const IssGuidelines = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,6 +22,7 @@ const IssGuidelines = () => {
           <TabsTrigger value="3d-model">3D ISS Model</TabsTrigger>
           <TabsTrigger value="space-map">Space Map</TabsTrigger>
           <TabsTrigger value="guidelines">Guidelines</TabsTrigger>
+          <TabsTrigger value="future-features">Future Features</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
@@ -210,6 +211,20 @@ const IssGuidelines = () => {
                 <li>Medium shelf life (1-6 months): Ready access storage</li>
                 <li>Long shelf life (6+ months): Deep storage</li>
               </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="future-features">
+          <Card>
+            <CardHeader>
+              <CardTitle>Future ISS Management Enhancements</CardTitle>
+              <CardDescription>
+                Advanced features planned for future implementation to enhance ISS operations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <IssDoraemonFeatures />
             </CardContent>
           </Card>
         </TabsContent>
