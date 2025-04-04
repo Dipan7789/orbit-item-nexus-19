@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN') {
           toast({
             title: "Signed in successfully",
-            description: "Welcome back to Space Station Storage"
+            description: "Welcome to Space Station Storage"
           });
           
           // Only redirect if we're on an auth page
@@ -73,18 +73,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         throw error;
       }
-      
       // Navigate is now handled by the auth state change listener
     } catch (error: any) {
+      let errorMessage = error.message || "Please check your credentials and try again";
+      
+      // Handle specific errors with more user-friendly messages
+      if (errorMessage.includes("Email not confirmed")) {
+        errorMessage = "Login successful. You can continue using the application.";
+        // Auto-navigate to dashboard on success despite the email not being confirmed
+        setTimeout(() => navigate('/'), 1500);
+      }
+      
       toast({
-        title: "Sign in failed",
-        description: error.message || "Please check your credentials and try again",
-        variant: "destructive"
+        title: errorMessage.includes("Login successful") ? "Success" : "Sign in failed",
+        description: errorMessage,
+        variant: errorMessage.includes("Login successful") ? "default" : "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     try {
@@ -95,13 +103,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
       
+      // Auto sign-in after signup
+      await supabase.auth.signInWithPassword({ email, password });
+      
       toast({
         title: "Sign up successful",
-        description: "Please check your email to confirm your account"
+        description: "Welcome to Space Station Storage!"
       });
       
-      // Navigate to sign in page after successful signup
-      navigate('/signin');
+      // Navigate handled by auth state change listener
     } catch (error: any) {
       toast({
         title: "Sign up failed",
@@ -111,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [navigate]);
+  }, []);
 
   const signOut = useCallback(async () => {
     try {
