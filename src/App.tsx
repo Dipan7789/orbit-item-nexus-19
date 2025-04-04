@@ -22,16 +22,12 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import IssGuidelines from "./pages/IssGuidelines";
 
-// Doraemon-inspired feature pages
+// Feature pages
 import InstantNavigation from "./pages/InstantNavigation";
 import SpoilageSimulation from "./pages/SpoilageSimulation";
 import SmartTagging from "./pages/SmartTagging";
-
-// Future Features Pages
-import ZoomableView from "./pages/ZoomableView";
-import Translator from "./pages/Translator";
-import TransferAssistant from "./pages/TransferAssistant";
 import EventPredictor from "./pages/EventPredictor";
+import AIAssistant from "./pages/AIAssistant";
 
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -89,16 +85,12 @@ const App = () => {
                     <Route path="/iss-guidelines" element={<IssGuidelines />} />
                     <Route path="/settings" element={<Settings />} />
                     
-                    {/* Doraemon-inspired Feature Routes - Implemented */}
+                    {/* Feature Routes - Implemented */}
                     <Route path="/instant-navigation" element={<InstantNavigation />} />
                     <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
                     <Route path="/smart-tagging" element={<SmartTagging />} />
-                    
-                    {/* Future Feature Routes */}
-                    <Route path="/zoomable-view" element={<ZoomableView />} />
-                    <Route path="/translator" element={<Translator />} />
-                    <Route path="/transfer-assistant" element={<TransferAssistant />} />
                     <Route path="/event-predictor" element={<EventPredictor />} />
+                    <Route path="/ai-assistant" element={<AIAssistant />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

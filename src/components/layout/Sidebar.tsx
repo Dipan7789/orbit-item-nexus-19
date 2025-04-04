@@ -16,12 +16,9 @@ import {
   Satellite,
   Navigation,
   Clock,
-  ZoomIn,
-  Globe,
-  Send,
   AlertTriangle,
   MessageSquare,
-  ChevronRight
+  Bot
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -55,10 +52,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     { name: 'Quick Navigation', icon: Navigation, path: '/instant-navigation', status: 'available' },
     { name: 'Expiry Forecasting', icon: Clock, path: '/spoilage-simulation', status: 'dev' },
     { name: 'Smart Tagging', icon: Tags, path: '/smart-tagging', status: 'dev' },
-    { name: 'Zoomable View', icon: ZoomIn, path: '/zoomable-view', status: 'planned' },
-    { name: 'Translator', icon: Globe, path: '/translator', status: 'planned' },
-    { name: 'Transfer Assistant', icon: Send, path: '/transfer-assistant', status: 'planned' },
-    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'planned' },
+    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'dev' },
+    { name: 'AI Assistant', icon: Bot, path: '/ai-assistant', status: 'available' },
   ];
 
   return (
@@ -121,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                   key={feature.path}
                   to={feature.path}
                   className={({ isActive }) => cn(
-                    'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                    'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-all duration-200',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : isPlanned
@@ -140,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                         <span className="text-xs bg-muted px-1.5 py-0.5 rounded-sm">Coming Soon</span>
                       )}
                       {isInDev && (
-                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm">Beta</span>
+                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm shadow-sm animate-pulse">Beta</span>
                       )}
                     </div>
                   )}

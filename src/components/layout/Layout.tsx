@@ -50,7 +50,7 @@ const Layout = () => {
       <div 
         className={`fixed top-0 bottom-0 left-0 z-30 transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static`}
+        } lg:translate-x-0 lg:relative`}
       >
         <Sidebar isCollapsed={sidebarCollapsed} />
       </div>
@@ -58,7 +58,7 @@ const Layout = () => {
       {/* Main content area */}
       <div 
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          !isMobile && !sidebarCollapsed ? 'lg:ml-64' : 'lg:ml-20'
+          !isMobile && !sidebarCollapsed ? 'lg:pl-64' : 'lg:pl-20'
         }`}
         onClick={handleMainContentClick}
       >
