@@ -37,7 +37,7 @@ const formSchema = z.object({
   category: z.string(),
   quantity: z.coerce.number().min(0),
   location: z.string(),
-  priority: z.union([z.string(), z.number()]),
+  priority: z.enum(["low", "medium", "high"]),
   width_cm: z.coerce.number().min(0).optional(),
   depth_cm: z.coerce.number().min(0).optional(),
   height_cm: z.coerce.number().min(0).optional(),
@@ -222,7 +222,7 @@ const InventoryEditForm: React.FC<InventoryEditFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />

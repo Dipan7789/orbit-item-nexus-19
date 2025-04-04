@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 const ExportOptions = () => {
   const [exportFormat, setExportFormat] = useState('csv');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
   
   return (
     <div className="space-y-6">
@@ -199,6 +200,17 @@ const ExportOptions = () => {
           Export Data
         </Button>
       </div>
+      
+      <Select value={sortBy} onValueChange={setSortBy}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="newest">Newest First</SelectItem>
+          <SelectItem value="oldest">Oldest First</SelectItem>
+          <SelectItem value="type">Group by Type</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 };
