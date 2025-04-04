@@ -15,9 +15,15 @@ import { Edit, Trash, MoreHorizontal, MoveUp, MoveDown, RotateCw } from 'lucide-
 
 interface InventoryActionsProps {
   itemId: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const InventoryActions: React.FC<InventoryActionsProps> = ({ itemId }) => {
+const InventoryActions: React.FC<InventoryActionsProps> = ({ 
+  itemId, 
+  onEdit, 
+  onDelete 
+}) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,11 +47,11 @@ const InventoryActions: React.FC<InventoryActionsProps> = ({ itemId }) => {
           Relocate
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2">
+        <DropdownMenuItem className="gap-2" onClick={onEdit}>
           <Edit size={16} />
           Edit Item
         </DropdownMenuItem>
-        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive">
+        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={onDelete}>
           <Trash size={16} />
           Delete Item
         </DropdownMenuItem>

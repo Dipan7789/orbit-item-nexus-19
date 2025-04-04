@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +17,6 @@ const colors = {
   selected: 'ring-2 ring-blue-500 ring-offset-2'
 };
 
-// Helper function to calculate container fill percentage
 const calculateFillPercentage = (
   container: StorageContainer, 
   items: InventoryItem[], 
@@ -54,7 +52,6 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
   const [selectedContainer, setSelectedContainer] = useState<StorageContainer | null>(null);
   const [containerItems, setContainerItems] = useState<InventoryItem[]>([]);
   
-  // Group containers by zone
   const containersByZone = containers.reduce((acc, container) => {
     const zone = container.zone;
     if (!acc[zone]) acc[zone] = [];
@@ -62,7 +59,6 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
     return acc;
   }, {} as Record<string, StorageContainer[]>);
   
-  // Set selected container when containerId changes
   useEffect(() => {
     if (containerId) {
       const container = containers.find(c => c.container_id === containerId) || null;
@@ -72,7 +68,6 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
     }
   }, [containerId, containers]);
   
-  // Update container items when selected container changes
   useEffect(() => {
     if (!selectedContainer) {
       setContainerItems([]);
@@ -194,7 +189,7 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
                           </div>
                           {(item.expiryDate || item.expiry_date) && (
                             <div className="text-xs text-red-600 mt-1">
-                              Expires: {item.expiryDate || item.expiry_date}
+                              Expires: {String(item.expiryDate || item.expiry_date)}
                             </div>
                           )}
                         </div>

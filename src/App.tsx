@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
+import IssGuidelines from "./pages/IssGuidelines";
 
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -73,6 +74,7 @@ const App = () => {
                   <Route path="/import-export" element={<ImportExport />} />
                   <Route path="/categories" element={<Categories />} />
                   <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/iss-guidelines" element={<IssGuidelines />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

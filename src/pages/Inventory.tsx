@@ -13,18 +13,28 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Package, Filter, Download, Upload, Plus } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 import InventoryActions from '@/components/inventory/InventoryActions';
+import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
 import { dummyInventoryData } from '@/data/dummyData';
+import { InventoryItem } from '@/types/inventory';
 
 const Inventory = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPriority, setSelectedPriority] = useState('all');
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData);
+  
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
+  const [isNewItem, setIsNewItem] = useState(false);
 
   // Filter the inventory data based on search and filters
-  const filteredItems = dummyInventoryData.filter(item => {
+  const filteredItems = inventoryItems.filter(item => {
     return (
       (searchTerm === '' || 
        item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -34,6 +44,41 @@ const Inventory = () => {
       (selectedPriority === 'all' || item.priority === selectedPriority)
     );
   });
+
+  // Open dialog to edit an item
+  const handleEditItem = (itemId: string) => {
+    const item = inventoryItems.find(item => item.id === itemId);
+    setCurrentItem(item);
+    setIsNewItem(false);
+    setDialogOpen(true);
+  };
+
+  // Open dialog to add a new item
+  const handleAddItem = () => {
+    setCurrentItem(undefined);
+    setIsNewItem(true);
+    setDialogOpen(true);
+  };
+
+  // Delete an item
+  const handleDeleteItem = (itemId: string) => {
+    setInventoryItems(items => items.filter(item => item.id !== itemId));
+    toast({
+      title: "Item Deleted",
+      description: "The item has been removed from inventory.",
+    });
+  };
+
+  // Save an item (new or updated)
+  const handleSaveItem = (item: InventoryItem) => {
+    if (isNewItem) {
+      setInventoryItems(items => [...items, item]);
+    } else {
+      setInventoryItems(items => 
+        items.map(i => i.id === item.id ? item : i)
+      );
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -51,7 +96,7 @@ const Inventory = () => {
             <Upload size={16} />
             Import
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleAddItem}>
             <Plus size={16} />
             New Item
           </Button>
@@ -157,7 +202,11 @@ const Inventory = () => {
                     </TableCell>
                     <TableCell>{item.lastUsed}</TableCell>
                     <TableCell className="text-right">
-                      <InventoryActions itemId={item.id} />
+                      <InventoryActions 
+                        itemId={item.id} 
+                        onEdit={() => handleEditItem(item.id)}
+                        onDelete={() => handleDeleteItem(item.id)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -166,6 +215,15 @@ const Inventory = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit/Add Item Dialog */}
+      <InventoryItemDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        item={currentItem}
+        onSave={handleSaveItem}
+        isNewItem={isNewItem}
+      />
     </div>
   );
 };
