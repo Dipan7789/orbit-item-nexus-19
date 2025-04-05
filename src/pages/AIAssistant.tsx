@@ -1,25 +1,32 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  AlertCircle, 
+  Tabs, 
+  TabsContent,
+  TabsList,
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { 
   ArrowUpCircle, 
-  Bot, 
-  Package, 
-  Search, 
+  Bot,
   Sparkles, 
-  User, 
-  X,
-  Clock,
-  AlertTriangle,
-  Rocket,
-  Zap
+  Cpu, 
+  FileText, 
+  Search, 
+  PackageSearch, 
+  RefreshCw, 
+  Rocket, 
+  CircleDot,
+  Calendar,
+  LayoutDashboard,
+  PinIcon,
+  Map
 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
+import { inventoryDatabase } from '@/data/mockData';
 
 interface Message {
   id: string;
@@ -28,17 +35,17 @@ interface Message {
   timestamp: Date;
   isLoading?: boolean;
   type?: 'normal' | 'error' | 'warning' | 'info';
+  itemData?: any;
+  isLocationData?: boolean;
 }
 
-interface QuickAction {
+interface RecentQuery {
   id: string;
-  icon: React.ElementType;
-  label: string;
-  action: () => void;
+  text: string;
+  timestamp: Date;
 }
 
-const AIAssistant = () => {
-  const { toast } = useToast();
+const AIAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -46,107 +53,186 @@ const AIAssistant = () => {
       sender: 'assistant',
       timestamp: new Date(),
       type: 'normal'
-    },
-    {
-      id: '2',
-      text: "I can help with inventory searches, emergency procedures, or item recommendations. Try asking me a question!",
-      sender: 'assistant',
-      timestamp: new Date(Date.now() + 100),
-      type: 'info'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('chat');
+  const [pinnedQueries, setPinnedQueries] = useState<string[]>([
+    'Where is the medical kit?',
+    'Show me expiring items',
+    'Locate emergency oxygen'
+  ]);
+  const [recentQueries, setRecentQueries] = useState<RecentQuery[]>([
+    {
+      id: '1',
+      text: 'Where is the emergency kit?',
+      timestamp: new Date(Date.now() - 3600000) // 1 hour ago
+    },
+    {
+      id: '2',
+      text: 'How many freeze-dried meals do we have left?',
+      timestamp: new Date(Date.now() - 7200000) // 2 hours ago
+    }
+  ]);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  const quickActions: QuickAction[] = [
-    {
-      id: 'find-item',
-      icon: Search,
-      label: 'Find an item',
-      action: () => handleQuickAction('Can you help me find a medical kit?')
-    },
-    {
-      id: 'inventory-status',
-      icon: Package,
-      label: 'Inventory status',
-      action: () => handleQuickAction('What\'s the current inventory status?')
-    },
-    {
-      id: 'emergency',
-      icon: AlertCircle,
-      label: 'Emergency procedures',
-      action: () => handleQuickAction('Show me emergency decompression procedures')
-    },
-    {
-      id: 'expiring-items',
-      icon: Clock,
-      label: 'Expiring items',
-      action: () => handleQuickAction('What items are expiring soon?')
-    },
-    {
-      id: 'upcoming-events',
-      icon: AlertTriangle,
-      label: 'Upcoming events',
-      action: () => handleQuickAction('Are there any upcoming celestial events I should know about?')
-    }
-  ];
-  
-  const getAssistantResponse = async (userMessage: string): Promise<string> => {
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-    
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('find') || lowerMessage.includes('where')) {
-      if (lowerMessage.includes('medical') || lowerMessage.includes('kit')) {
-        return "I found 3 medical kits in inventory. The nearest one is in Module A, Cabinet 3. Would you like me to show you the exact location?";
-      }
-      return "I can help you find items in the inventory. What specific item are you looking for?";
-    }
-    
-    if (lowerMessage.includes('inventory') && lowerMessage.includes('status')) {
-      return "Current inventory status: 143 items total, 12 items low on stock, 5 items expired. Priority attention needed for Medical Supplies (3 expired items) and Food Rations (2 items critically low).";
-    }
-    
-    if (lowerMessage.includes('emergency')) {
-      if (lowerMessage.includes('decompression')) {
-        return "EMERGENCY PROCEDURE: DECOMPRESSION\n1. Put on nearest oxygen mask\n2. Secure yourself to prevent being pulled toward breach\n3. Alert all crew members via emergency channel\n4. Locate breach using pressure sensors\n5. Seal affected module if possible\nWould you like me to notify the crew?";
-      }
-      return "I can provide guidance for various emergency procedures. Please specify which emergency you need help with (e.g., decompression, fire, medical, etc.)";
-    }
-    
-    if (lowerMessage.includes('expir')) {
-      return "I found 8 items expiring within the next 30 days:\n- Medical Kit (5 days)\n- Freeze-Dried Meals (15 days)\n- Antibiotics (-2 days, EXPIRED)\n- Painkillers (20 days)\nWould you like to see the complete list?";
-    }
-    
-    if (lowerMessage.includes('event') || lowerMessage.includes('celestial')) {
-      return "Upcoming celestial events:\n1. X-Class Solar Flare (1 day from now, medium severity)\n2. Orbital Debris Field Crossing (2 days from now, high severity)\n3. Perseid Meteor Shower (4 days from now, low severity)\nThe debris field crossing requires preparation. Would you like me to show the detailed forecast?";
-    }
-    
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      return "Hello! I'm your ISS Inventory Assistant. How can I help you today?";
-    }
-    
-    if (lowerMessage.includes('thank')) {
-      return "You're welcome! Let me know if you need anything else.";
-    }
-    
-    return "I understand you're asking about '" + userMessage + "'. I can help with inventory searches, emergency procedures, expiring items, and more. Could you provide more details about what you need?";
-  };
-  
+  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
-  useEffect(() => {
-    if (isChatOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300);
+  const findItemInInventory = (query: string): any => {
+    const normalizedQuery = query.toLowerCase();
+    
+    // Check for specific item queries
+    if (normalizedQuery.includes('medical kit') || normalizedQuery.includes('first aid')) {
+      return {
+        id: 'MED-1234',
+        name: 'Medical Kit',
+        location: 'Module A - Cabinet 3',
+        condition: 'Good, 95% contents intact',
+        lastChecked: '2 days ago',
+        expiryDate: '2025-08-15',
+        coordinates: {
+          module: 'A',
+          section: 'Medical Bay',
+          cabinet: 3,
+          shelf: 2
+        }
+      };
+    } else if (normalizedQuery.includes('oxygen') || normalizedQuery.includes('o2')) {
+      return {
+        id: 'OXY-9012',
+        name: 'Oxygen Canisters',
+        location: 'Module B - Life Support Section',
+        condition: 'Excellent, pressure at optimal levels',
+        lastChecked: '1 day ago',
+        expiryDate: 'N/A',
+        coordinates: {
+          module: 'B',
+          section: 'Life Support',
+          cabinet: 1,
+          shelf: 1
+        }
+      };
+    } else if (normalizedQuery.includes('food') || normalizedQuery.includes('meal') || normalizedQuery.includes('freeze-dried')) {
+      return {
+        id: 'FOOD-5678',
+        name: 'Freeze-Dried Meals',
+        location: 'Cargo Bay - Food Storage',
+        condition: 'Good, 3 meals remaining',
+        lastChecked: '12 hours ago',
+        expiryDate: '2025-06-30',
+        coordinates: {
+          module: 'Cargo',
+          section: 'Food Storage',
+          cabinet: 2,
+          shelf: 3
+        }
+      };
+    } else if (normalizedQuery.includes('tool') || normalizedQuery.includes('repair')) {
+      return {
+        id: 'TOOL-5678',
+        name: 'Multi-Tool',
+        location: 'Module B - Tool Rack',
+        condition: 'Excellent, all attachments intact',
+        lastChecked: '3 days ago',
+        expiryDate: 'N/A',
+        coordinates: {
+          module: 'B',
+          section: 'Maintenance',
+          cabinet: 4,
+          shelf: 2
+        }
+      };
     }
-  }, [isChatOpen]);
+    
+    // If no specific item was found
+    return null;
+  };
+  
+  const generateResponse = async (userMessage: string): Promise<Message> => {
+    // Wait a bit to simulate processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Check if this is a location or item query
+    if (
+      lowerMessage.includes('where') || 
+      lowerMessage.includes('find') || 
+      lowerMessage.includes('locate') || 
+      lowerMessage.includes('search')
+    ) {
+      const item = findItemInInventory(lowerMessage);
+      
+      if (item) {
+        // Return a detailed response with item information
+        return {
+          id: Date.now().toString(),
+          text: `I found the ${item.name} (ID: ${item.id}) for you!`,
+          sender: 'assistant',
+          timestamp: new Date(),
+          itemData: item,
+          isLocationData: true
+        };
+      } else {
+        return {
+          id: Date.now().toString(),
+          text: "I'm sorry, I couldn't find that specific item in the inventory database. Could you provide more details or check if the item name is correct?",
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+      }
+    }
+    
+    // Check for inventory status queries
+    if (
+      lowerMessage.includes('how many') || 
+      lowerMessage.includes('count') || 
+      lowerMessage.includes('remaining')
+    ) {
+      const item = findItemInInventory(lowerMessage);
+      
+      if (item) {
+        // Return detailed inventory information
+        return {
+          id: Date.now().toString(),
+          text: `According to inventory records, we have: ${item.name} (ID: ${item.id})`,
+          sender: 'assistant',
+          timestamp: new Date(),
+          itemData: item
+        };
+      }
+    }
+    
+    // Default responses for other types of queries
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+      return {
+        id: Date.now().toString(),
+        text: "Hello! I'm your ISS Inventory Assistant. How can I help you today?",
+        sender: 'assistant',
+        timestamp: new Date()
+      };
+    } else if (lowerMessage.includes('thank')) {
+      return {
+        id: Date.now().toString(),
+        text: "You're welcome! Let me know if you need anything else.",
+        sender: 'assistant',
+        timestamp: new Date()
+      };
+    } else {
+      return {
+        id: Date.now().toString(),
+        text: "I'll help you with that. Please provide more details about what you're looking for, or try asking about specific items like 'Where is the medical kit?' or 'How many freeze-dried meals do we have left?'",
+        sender: 'assistant',
+        timestamp: new Date()
+      };
+    }
+  };
   
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -170,198 +256,304 @@ const AIAssistant = () => {
     setInputValue('');
     setIsTyping(true);
     
+    // Add to recent queries
+    const newQuery = {
+      id: Date.now().toString(),
+      text: inputValue,
+      timestamp: new Date()
+    };
+    
+    setRecentQueries(prev => [newQuery, ...prev.slice(0, 9)]); // Keep only the 10 most recent
+    
     try {
-      const response = await getAssistantResponse(inputValue);
+      const response = await generateResponse(inputValue);
       
+      // Replace loading message with actual response
       setMessages(prev => prev.map(msg => 
-        msg.id === loadingMessage.id 
-          ? { ...msg, text: response, isLoading: false } 
-          : msg
+        msg.id === loadingMessage.id ? response : msg
       ));
     } catch (error) {
+      // Handle error
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMessage.id 
           ? { 
               ...msg, 
-              text: "I'm sorry, I encountered an error processing your request. Please try again.",
+              text: "I'm sorry, I encountered an error. Please try again.",
               isLoading: false,
               type: 'error'
             } 
           : msg
       ));
-      
-      toast({
-        title: "Connection Error",
-        description: "The assistant is currently unavailable. Please try again later.",
-        variant: "destructive",
-      });
     } finally {
       setIsTyping(false);
     }
   };
   
-  const handleQuickAction = (actionMessage: string) => {
-    setInputValue(actionMessage);
-    setTimeout(() => {
-      handleSendMessage();
-    }, 100);
-  };
-  
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       handleSendMessage();
     }
+  };
+  
+  const handlePinnedQuery = (query: string) => {
+    setInputValue(query);
+    inputRef.current?.focus();
+  };
+  
+  const handleRecentQuery = (query: string) => {
+    setInputValue(query);
+    inputRef.current?.focus();
   };
   
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  const toggleChat = () => {
-    setIsChatOpen(prev => !prev);
-  };
-  
-  const clearChat = () => {
-    setMessages([
-      {
-        id: Date.now().toString(),
-        text: "Chat history cleared. How can I assist you?",
-        sender: 'assistant',
-        timestamp: new Date()
-      }
-    ]);
+  const formatTimestamp = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.round(diffMs / 60000);
+    const diffHours = Math.round(diffMs / 3600000);
+    
+    if (diffMin < 60) {
+      return `${diffMin} min ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hours ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   };
   
   return (
-    <div className="h-[calc(100vh-10rem)] flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Bot className="text-primary" /> AI Assistant
-          </h1>
-          <p className="text-muted-foreground">Your intelligent space station companion</p>
+    <div className="container max-w-6xl mx-auto p-4 sm:p-6">
+      <h1 className="text-2xl font-bold mb-2">AI Assistant</h1>
+      <p className="text-muted-foreground mb-6">
+        Intelligent assistant for inventory management and location tracking
+      </p>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="h-[calc(100vh-220px)] flex flex-col shadow-lg">
+            <CardHeader className="pb-0">
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-6 w-6 text-primary" />
+                ISS Inventory Assistant
+              </CardTitle>
+              <CardDescription>
+                Ask questions about inventory items, locations, and status
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="flex-1 flex flex-col overflow-hidden pt-4">
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <div 
+                      key={message.id}
+                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`
+                          rounded-lg px-4 py-3 shadow-sm max-w-[80%]
+                          ${message.sender === 'user' 
+                            ? 'bg-primary text-primary-foreground rounded-tr-none' 
+                            : 'bg-card border rounded-tl-none'}
+                        `}
+                      >
+                        {message.isLoading ? (
+                          <div className="flex items-center h-5 space-x-1">
+                            <div className="dot-typing"></div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              {message.sender === 'assistant' && (
+                                <Sparkles size={16} className="text-primary mt-1 shrink-0" />
+                              )}
+                              <div>
+                                {message.text}
+                              </div>
+                            </div>
+                            
+                            {message.itemData && (
+                              <div className="bg-muted/40 backdrop-blur p-3 rounded-md mt-2 space-y-2 text-sm">
+                                <div className="font-medium">{message.itemData.name}</div>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                  <div className="flex items-center gap-1">
+                                    <Map size={14} className="text-muted-foreground" />
+                                    <span>Location: {message.itemData.location}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <CircleDot size={14} className="text-muted-foreground" />
+                                    <span>Condition: {message.itemData.condition}</span>
+                                  </div>
+                                  {message.itemData.expiryDate !== 'N/A' && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar size={14} className="text-muted-foreground" />
+                                      <span>Expires: {message.itemData.expiryDate}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {message.isLocationData && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full mt-2 text-xs flex items-center gap-1"
+                                    onClick={() => {
+                                      window.location.href = `/storage-map?highlight=${message.itemData.coordinates.module}-${message.itemData.coordinates.section}-${message.itemData.coordinates.cabinet}`;
+                                    }}
+                                  >
+                                    <LayoutDashboard size={12} />
+                                    View on Storage Map
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                            
+                            <div className="text-right text-xs opacity-70">
+                              {formatTime(message.timestamp)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+              
+              <div className="pt-4 flex gap-2">
+                <Input
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Ask about inventory items or locations..."
+                  className="flex-1"
+                  disabled={isTyping}
+                />
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isTyping}
+                >
+                  <ArrowUpCircle size={18} />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={clearChat}>
-            <Rocket size={16} />
-            New Conversation
-          </Button>
+        <div className="space-y-6">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Access</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="pinned" className="w-full">
+                <TabsList className="grid grid-cols-2 mb-4">
+                  <TabsTrigger value="pinned">
+                    <PinIcon size={14} className="mr-2" />
+                    Pinned
+                  </TabsTrigger>
+                  <TabsTrigger value="recent">
+                    <RefreshCw size={14} className="mr-2" />
+                    Recent
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="pinned" className="space-y-2">
+                  {pinnedQueries.map((query, index) => (
+                    <Button 
+                      key={index} 
+                      variant="outline" 
+                      className="w-full justify-start text-left h-auto py-2 px-3"
+                      onClick={() => handlePinnedQuery(query)}
+                    >
+                      <Search size={14} className="mr-2 shrink-0" />
+                      <span className="truncate">{query}</span>
+                    </Button>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="recent" className="space-y-2">
+                  {recentQueries.map((query) => (
+                    <Button 
+                      key={query.id} 
+                      variant="outline" 
+                      className="w-full justify-start text-left h-auto py-2 px-3"
+                      onClick={() => handleRecentQuery(query.text)}
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="truncate w-full">{query.text}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimestamp(query.timestamp)}
+                        </span>
+                      </div>
+                    </Button>
+                  ))}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg">Assistant Features</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <PackageSearch size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Item Location</h3>
+                    <p className="text-xs text-muted-foreground">Find any inventory item with detailed location data</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <FileText size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Status Reports</h3>
+                    <p className="text-xs text-muted-foreground">Get detailed reports on inventory statuses</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <Cpu size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Predictive Analysis</h3>
+                    <p className="text-xs text-muted-foreground">AI predictions for inventory needs</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <Rocket size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">Mission Support</h3>
+                    <p className="text-xs text-muted-foreground">Contextual assistance for current mission tasks</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       
-      <Card className="flex-grow shadow-md relative overflow-hidden border bg-card/30 backdrop-blur-sm">
-        <CardContent className="p-0 h-full flex flex-col">
-          <div className="flex items-center justify-between bg-primary/5 backdrop-blur-sm p-3 border-b">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot size={16} className="text-primary" />
-              </div>
-              <div>
-                <div className="font-semibold text-sm">ISS Assistant</div>
-                <div className="text-xs text-muted-foreground">Always here to help</div>
-              </div>
-            </div>
-            <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-              Online
-            </Badge>
-          </div>
-          
-          <ScrollArea className="flex-grow p-4 pt-6">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div 
-                  key={message.id}
-                  className={cn(
-                    "flex",
-                    message.sender === 'user' ? 'justify-end' : 'justify-start'
-                  )}
-                >
-                  <div 
-                    className={cn(
-                      "max-w-[80%] rounded-xl px-4 py-2.5 shadow-sm",
-                      message.sender === 'user' 
-                        ? 'bg-primary text-primary-foreground rounded-tr-none'
-                        : 'bg-muted/50 backdrop-blur-lg border rounded-tl-none',
-                      message.type === 'error' && 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-                      message.type === 'warning' && 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-                      message.type === 'info' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                    )}
-                  >
-                    <div className="flex items-start gap-2">
-                      {message.sender === 'assistant' && !message.isLoading && (
-                        <Sparkles size={16} className="mt-1 text-primary" />
-                      )}
-                      
-                      <div className="space-y-1">
-                        <div className="whitespace-pre-line">
-                          {message.isLoading ? (
-                            <div className="flex items-center h-6">
-                              <div className="dot-typing"></div>
-                            </div>
-                          ) : (
-                            message.text
-                          )}
-                        </div>
-                        <div className="text-xs opacity-70 text-right">
-                          {formatTime(message.timestamp)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
-          
-          <div className="p-3 border-t bg-card/30 backdrop-blur-sm">
-            <div className="mb-3">
-              <div className="text-xs font-medium mb-2">Quick actions:</div>
-              <div className="flex flex-wrap gap-2">
-                {quickActions.map(action => (
-                  <Button 
-                    key={action.id}
-                    variant="outline" 
-                    size="sm"
-                    className="gap-1 rounded-full text-xs py-0 h-8"
-                    onClick={action.action}
-                  >
-                    <action.icon size={14} />
-                    {action.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message here..."
-                className="bg-background"
-                disabled={isTyping}
-              />
-              <Button 
-                size="icon"
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim() || isTyping}
-              >
-                <ArrowUpCircle size={18} />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <style>{`
+      <style jsx>{`
         .dot-typing {
           position: relative;
-          width: 10px;
-          height: 10px;
-          border-radius: 5px;
+          width: 6px;
+          height: 6px;
+          border-radius: 3px;
           background-color: currentColor;
           color: currentColor;
           animation: dot-typing 1s infinite linear;
@@ -371,20 +563,20 @@ const AIAssistant = () => {
           content: '';
           position: absolute;
           top: 0;
-          width: 10px;
-          height: 10px;
-          border-radius: 5px;
+          width: 6px;
+          height: 6px;
+          border-radius: 3px;
           background-color: currentColor;
           color: currentColor;
         }
         
         .dot-typing::before {
-          left: -15px;
+          left: -10px;
           animation: dot-typing 1s infinite 0.3s linear;
         }
         
         .dot-typing::after {
-          left: 15px;
+          left: 10px;
           animation: dot-typing 1s infinite 0.6s linear;
         }
         

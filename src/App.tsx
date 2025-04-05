@@ -34,6 +34,7 @@ import AIAssistant from "./pages/AIAssistant";
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { UserProvider } from "./context/UserContext";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -64,43 +65,45 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ThemeProvider>
-            <TooltipProvider>
-              <div className="w-full min-h-screen">
-                <Routes>
-                  {/* Auth routes */}
-                  <Route path="/signin" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
-                  
-                  {/* Protected app routes */}
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }>
-                    <Route index element={<Dashboard />} />
-                    <Route path="/inventory" element={<Inventory />} />
-                    <Route path="/storage-map" element={<StorageMap />} />
-                    <Route path="/import-export" element={<ImportExport />} />
-                    <Route path="/categories" element={<Categories />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/iss-guidelines" element={<IssGuidelines />} />
-                    <Route path="/settings" element={<Settings />} />
+          <UserProvider>
+            <ThemeProvider>
+              <TooltipProvider>
+                <div className="w-full min-h-screen">
+                  <Routes>
+                    {/* Auth routes */}
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
                     
-                    {/* Feature Routes */}
-                    <Route path="/instant-navigation" element={<InstantNavigation />} />
-                    <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
-                    <Route path="/smart-tagging" element={<SmartTagging />} />
-                    <Route path="/event-predictor" element={<EventPredictor />} />
-                    <Route path="/ai-assistant" element={<AIAssistant />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </ThemeProvider>
+                    {/* Protected app routes */}
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Layout />
+                      </ProtectedRoute>
+                    }>
+                      <Route index element={<Dashboard />} />
+                      <Route path="/inventory" element={<Inventory />} />
+                      <Route path="/storage-map" element={<StorageMap />} />
+                      <Route path="/import-export" element={<ImportExport />} />
+                      <Route path="/categories" element={<Categories />} />
+                      <Route path="/analytics" element={<Analytics />} />
+                      <Route path="/iss-guidelines" element={<IssGuidelines />} />
+                      <Route path="/settings" element={<Settings />} />
+                      
+                      {/* Feature Routes */}
+                      <Route path="/instant-navigation" element={<InstantNavigation />} />
+                      <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
+                      <Route path="/smart-tagging" element={<SmartTagging />} />
+                      <Route path="/event-predictor" element={<EventPredictor />} />
+                      <Route path="/ai-assistant" element={<AIAssistant />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+                <Toaster />
+                <Sonner />
+              </TooltipProvider>
+            </ThemeProvider>
+          </UserProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
