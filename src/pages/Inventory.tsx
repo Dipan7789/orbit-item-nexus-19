@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Package, Filter, Download, Upload, Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 import InventoryActions from '@/components/inventory/InventoryActions';
 import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
@@ -23,60 +22,16 @@ import { InventoryItem } from '@/types/inventory';
 
 const Inventory = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPriority, setSelectedPriority] = useState('all');
-  const [inventoryItems, setInventoryItems] = useState(dummyInventoryData);
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData);
   
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
   const [isNewItem, setIsNewItem] = useState(false);
-
-  // Process URL parameters on component mount
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const searchParam = params.get('search');
-    const highlightParam = params.get('highlight');
-    const filterParam = params.get('filter');
-    
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-    
-    if (highlightParam) {
-      setHighlightedItemId(highlightParam);
-      
-      // Scroll to the highlighted item
-      setTimeout(() => {
-        const element = document.getElementById(`item-${highlightParam}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('bg-primary/10');
-          setTimeout(() => {
-            element.classList.remove('bg-primary/10');
-            element.classList.add('bg-transparent');
-            setTimeout(() => {
-              element.classList.remove('bg-transparent');
-            }, 500);
-          }, 2000);
-        }
-      }, 100);
-    }
-    
-    if (filterParam === 'expiry') {
-      // You could set a filter here based on expiry dates
-      toast({
-        title: "Filter Applied",
-        description: "Showing items by expiration date."
-      });
-    }
-  }, [location.search, toast]);
 
   // Filter the inventory data based on search and filters
   const filteredItems = inventoryItems.filter(item => {
@@ -118,40 +73,11 @@ const Inventory = () => {
   const handleSaveItem = (item: InventoryItem) => {
     if (isNewItem) {
       setInventoryItems(items => [...items, item]);
-      toast({
-        title: "Item Added",
-        description: "The new item has been added to inventory.",
-      });
     } else {
       setInventoryItems(items => 
         items.map(i => i.id === item.id ? item : i)
       );
-      toast({
-        title: "Item Updated",
-        description: "The item has been updated successfully.",
-      });
     }
-  };
-  
-  // Handle export
-  const handleExport = () => {
-    toast({
-      title: "Exporting Data",
-      description: "Preparing inventory data for export...",
-    });
-    
-    // Simulate export process
-    setTimeout(() => {
-      toast({
-        title: "Export Complete",
-        description: "Inventory data has been exported successfully.",
-      });
-    }, 1500);
-  };
-  
-  // Handle import
-  const handleImport = () => {
-    navigate('/import-export');
   };
 
   return (
@@ -162,11 +88,11 @@ const Inventory = () => {
           <p className="text-muted-foreground mt-1">Manage and track all items in the space station</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={handleExport}>
+          <Button variant="outline" className="gap-2">
             <Download size={16} />
             Export
           </Button>
-          <Button variant="outline" className="gap-2" onClick={handleImport}>
+          <Button variant="outline" className="gap-2">
             <Upload size={16} />
             Import
           </Button>
@@ -257,11 +183,7 @@ const Inventory = () => {
               </TableHeader>
               <TableBody>
                 {filteredItems.map((item) => (
-                  <TableRow 
-                    key={item.id} 
-                    id={`item-${item.id}`}
-                    className={`transition-colors duration-300 ${highlightedItemId === item.id ? 'bg-primary/10' : ''}`}
-                  >
+                  <TableRow key={item.id}>
                     <TableCell className="font-mono text-xs">{item.id}</TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.category}</TableCell>

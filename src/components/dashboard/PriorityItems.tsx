@@ -1,95 +1,71 @@
 
 import React from 'react';
-import { AlertTriangle, MapPin, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
-interface PriorityItemsProps {
-  onItemClick: (itemId: string) => void;
-}
+const priorityItems = [
+  {
+    id: 'MED-1234',
+    name: 'Medical Kit',
+    location: 'Module A - Cabinet 3',
+    reason: 'Expiring soon (5 days)',
+    priority: 'high'
+  },
+  {
+    id: 'FOOD-5678',
+    name: 'Freeze-Dried Meals',
+    location: 'Cargo Bay - Food Storage',
+    reason: 'Low quantity (3 left)',
+    priority: 'high'
+  },
+  {
+    id: 'OXY-9012',
+    name: 'Oxygen Canisters',
+    location: 'Module B - Life Support',
+    reason: 'Scheduled replacement',
+    priority: 'medium'
+  }
+];
 
-const PriorityItems: React.FC<PriorityItemsProps> = ({ onItemClick }) => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  
-  // Sample priority items data
-  const priorityItems = [
-    { id: 'MED-001', name: 'Emergency Medical Kit', location: 'Storage Bay A', priority: 'high' },
-    { id: 'TOOL-042', name: 'EVA Repair Tools', location: 'Module C', priority: 'medium' },
-    { id: 'FOOD-107', name: 'Nutrient Supplement Packs', location: 'Crew Quarters', priority: 'high' },
-  ];
-  
-  const handleMarkResolved = (id: string, name: string) => {
-    // In a real app, you would update the database here
-    toast({
-      title: "Item Marked as Resolved",
-      description: `${name} has been marked as resolved.`
-    });
-  };
-  
-  const handleLocate = (id: string) => {
-    // Navigate to inventory with highlight parameter
-    navigate(`/inventory?highlight=${id}`);
-  };
-  
+const PriorityItems = () => {
   return (
-    <div className="space-y-4">
-      {priorityItems.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">
-          No priority items at this time
-        </div>
-      ) : (
-        priorityItems.map((item) => (
-          <div 
-            key={item.id}
-            className="flex items-start justify-between p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-all"
-          >
-            <div className="flex items-start gap-3">
-              <div>
-                <AlertTriangle 
-                  className={
-                    item.priority === 'high' 
-                      ? 'text-red-500 h-5 w-5' 
-                      : 'text-yellow-500 h-5 w-5'
-                  } 
-                />
-              </div>
-              <div>
-                <div 
-                  className="font-medium hover:text-primary cursor-pointer"
-                  onClick={() => onItemClick(item.id)}
-                >
-                  {item.name}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  ID: {item.id} • Location: {item.location}
-                </div>
-              </div>
+    <div className="space-y-3">
+      {priorityItems.map((item) => (
+        <div 
+          key={item.id} 
+          className="space-card p-3 rounded-md"
+        >
+          <div className="flex items-start gap-2">
+            <div className={`mt-0.5 ${
+              item.priority === 'high' ? 'text-red-500' : 'text-yellow-500'
+            }`}>
+              <AlertTriangle size={18} />
             </div>
-            <div className="flex items-center gap-1">
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="h-7 gap-1"
-                onClick={() => handleLocate(item.id)}
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="text-xs">Locate</span>
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="h-7 gap-1"
-                onClick={() => handleMarkResolved(item.id, item.name)}
-              >
-                <CheckCircle className="h-3.5 w-3.5" />
-                <span className="text-xs">Resolved</span>
-              </Button>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{item.name}</span>
+                <Badge 
+                  className={
+                    item.priority === 'high' ? 'bg-red-600' : 'bg-yellow-600'
+                  }
+                >
+                  {item.priority}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">{item.location}</p>
+              <p className="text-xs mt-1">{item.reason}</p>
             </div>
           </div>
-        ))
-      )}
+          <div className="flex gap-2 mt-2">
+            <Button variant="outline" size="sm" className="w-full text-xs">Locate</Button>
+            <Button size="sm" className="w-full text-xs flex items-center gap-1">
+              <CheckCircle2 size={14} />
+              Mark Resolved
+            </Button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

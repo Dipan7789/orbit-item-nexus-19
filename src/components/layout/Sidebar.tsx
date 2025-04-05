@@ -16,13 +16,15 @@ import {
   Satellite,
   Navigation,
   Clock,
+  ZoomIn,
+  Globe,
+  Send,
   AlertTriangle,
   MessageSquare,
-  Bot
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -53,8 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     { name: 'Quick Navigation', icon: Navigation, path: '/instant-navigation', status: 'available' },
     { name: 'Expiry Forecasting', icon: Clock, path: '/spoilage-simulation', status: 'dev' },
     { name: 'Smart Tagging', icon: Tags, path: '/smart-tagging', status: 'dev' },
-    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'dev' },
-    { name: 'AI Assistant', icon: Bot, path: '/ai-assistant', status: 'available' },
+    { name: 'Zoomable View', icon: ZoomIn, path: '/zoomable-view', status: 'planned' },
+    { name: 'Translator', icon: Globe, path: '/translator', status: 'planned' },
+    { name: 'Transfer Assistant', icon: Send, path: '/transfer-assistant', status: 'planned' },
+    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'planned' },
   ];
 
   return (
@@ -88,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 key={feature.path}
                 to={feature.path}
                 className={({ isActive }) => cn(
-                  'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-all duration-200',
+                  'flex items-center py-2 px-3 rounded-md text-sm font-medium',
                   isActive
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -112,13 +116,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
               const isPlanned = feature.status === 'planned';
               const isInDev = feature.status === 'dev';
               
-              // Basic NavLink element that will be used in both collapsed and expanded states
-              const navLinkElement = (
+              return (
                 <NavLink
                   key={feature.path}
                   to={feature.path}
                   className={({ isActive }) => cn(
-                    'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-all duration-200',
+                    'flex items-center py-2 px-3 rounded-md text-sm font-medium',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : isPlanned
@@ -137,34 +140,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                         <span className="text-xs bg-muted px-1.5 py-0.5 rounded-sm">Coming Soon</span>
                       )}
                       {isInDev && (
-                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm shadow-sm animate-pulse">Beta</span>
+                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm">Beta</span>
                       )}
                     </div>
                   )}
                 </NavLink>
               );
-              
-              // If sidebar is collapsed, wrap in tooltip for better UX
-              if (isCollapsed) {
-                return (
-                  <TooltipProvider key={feature.path}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        {navLinkElement}
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <div className="flex flex-col">
-                          <span>{feature.name}</span>
-                          {isInDev && <span className="text-xs text-amber-600">Beta</span>}
-                          {isPlanned && <span className="text-xs">Coming Soon</span>}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                );
-              }
-              
-              return navLinkElement;
             })}
           </div>
         </nav>
