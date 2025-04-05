@@ -51,6 +51,20 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        space: {
+          'blue': '#1E3A8A',
+          'purple': '#6D28D9',
+          'deep-blue': '#0F172A',
+          'bright-blue': '#3B82F6',
+          'teal': '#0D9488',
+          'gray': '#1F2937',
+          'light': '#E2E8F0'
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+        display: ['Space Grotesk', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,11 +80,29 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        "float": {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' }
+        },
+        "pulse-slow": {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' }
+        },
+        "rotate-slow": {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "float": "float 6s ease-in-out infinite",
+        "pulse-slow": "pulse-slow 4s ease-in-out infinite",
+        "rotate-slow": "rotate-slow 12s linear infinite"
       },
+      backdropBlur: {
+        xs: '2px',
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],
