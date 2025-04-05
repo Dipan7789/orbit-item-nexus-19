@@ -1,341 +1,979 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Package, Filter, Download, Upload, Plus } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
-import InventoryActions from '@/components/inventory/InventoryActions';
-import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
-import { dummyInventoryData } from '@/data/dummyData';
-import { InventoryItem } from '@/types/inventory';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import CSVImporter from '@/components/importexport/CSVImporter';
+// Define the schema for the inventory item form
+const inventoryItemSchema = z.object({
+  item_id: z.string().min(2, {
+    message: "Item ID must be at least 2 characters.",
+  }),
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  category: z.string().min(2, {
+    message: "Category must be at least 2 characters.",
+  }),
+  quantity: z.number().min(1, {
+    message: "Quantity must be at least 1.",
+  }).default(1),
+  location: z.string().min(2, {
+    message: "Location must be at least 2 characters.",
+  }),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  width_cm: z.number().min(1, {
+    message: "Width must be at least 1 cm.",
+  }).default(1),
+  depth_cm: z.number().min(1, {
+    message: "Depth must be at least 1 cm.",
+  }).default(1),
+  height_cm: z.number().min(1, {
+    message: "Height must be at least 1 cm.",
+  }).default(1),
+  mass_kg: z.number().min(0.1, {
+    message: "Mass must be at least 0.1 kg.",
+  }).default(1),
+  expiryDate: z.date().optional(),
+  notes: z.string().optional(),
+});
 
 const Inventory = () => {
+  const [inventoryItems, setInventoryItems] = useState([
+    {
+      id: "1",
+      item_id: "ITM001",
+      name: "Screwdriver",
+      description: "Standard screwdriver",
+      category: "Tools",
+      quantity: 50,
+      location: "A1-01",
+      priority: "medium",
+      width_cm: 5,
+      depth_cm: 5,
+      height_cm: 15,
+      mass_kg: 0.2,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for general repairs",
+    },
+    {
+      id: "2",
+      item_id: "ITM002",
+      name: "Wrench",
+      description: "Adjustable wrench",
+      category: "Tools",
+      quantity: 30,
+      location: "A1-02",
+      priority: "medium",
+      width_cm: 10,
+      depth_cm: 5,
+      height_cm: 20,
+      mass_kg: 0.5,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for tightening bolts",
+    },
+    {
+      id: "3",
+      item_id: "ITM003",
+      name: "Pliers",
+      description: "Needle-nose pliers",
+      category: "Tools",
+      quantity: 40,
+      location: "A1-03",
+      priority: "medium",
+      width_cm: 5,
+      depth_cm: 5,
+      height_cm: 15,
+      mass_kg: 0.3,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for gripping small objects",
+    },
+    {
+      id: "4",
+      item_id: "ITM004",
+      name: "Hammer",
+      description: "Claw hammer",
+      category: "Tools",
+      quantity: 20,
+      location: "A1-04",
+      priority: "medium",
+      width_cm: 10,
+      depth_cm: 10,
+      height_cm: 30,
+      mass_kg: 1.0,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for driving nails",
+    },
+    {
+      id: "5",
+      item_id: "ITM005",
+      name: "Tape Measure",
+      description: "Retractable tape measure",
+      category: "Tools",
+      quantity: 60,
+      location: "A1-05",
+      priority: "medium",
+      width_cm: 5,
+      depth_cm: 5,
+      height_cm: 10,
+      mass_kg: 0.1,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for measuring distances",
+    },
+    {
+      id: "6",
+      item_id: "ITM006",
+      name: "Safety Glasses",
+      description: "Clear safety glasses",
+      category: "Safety",
+      quantity: 100,
+      location: "B1-01",
+      priority: "low",
+      width_cm: 15,
+      depth_cm: 5,
+      height_cm: 5,
+      mass_kg: 0.1,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for eye protection",
+    },
+    {
+      id: "7",
+      item_id: "ITM007",
+      name: "Gloves",
+      description: "Leather work gloves",
+      category: "Safety",
+      quantity: 50,
+      location: "B1-02",
+      priority: "low",
+      width_cm: 10,
+      depth_cm: 5,
+      height_cm: 20,
+      mass_kg: 0.2,
+      expiryDate: null,
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for hand protection",
+    },
+    {
+      id: "8",
+      item_id: "ITM008",
+      name: "Respirator",
+      description: "N95 respirator mask",
+      category: "Safety",
+      quantity: 80,
+      location: "B1-03",
+      priority: "low",
+      width_cm: 10,
+      depth_cm: 5,
+      height_cm: 15,
+      mass_kg: 0.1,
+      expiryDate: "2024-01-01",
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for respiratory protection",
+    },
+    {
+      id: "9",
+      item_id: "ITM009",
+      name: "First Aid Kit",
+      description: "Basic first aid kit",
+      category: "Safety",
+      quantity: 10,
+      location: "B1-04",
+      priority: "high",
+      width_cm: 20,
+      depth_cm: 10,
+      height_cm: 30,
+      mass_kg: 1.5,
+      expiryDate: "2024-06-01",
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for treating injuries",
+    },
+    {
+      id: "10",
+      item_id: "ITM010",
+      name: "Fire Extinguisher",
+      description: "ABC fire extinguisher",
+      category: "Safety",
+      quantity: 5,
+      location: "B1-05",
+      priority: "high",
+      width_cm: 20,
+      depth_cm: 20,
+      height_cm: 50,
+      mass_kg: 5.0,
+      expiryDate: "2025-01-01",
+      dateAdded: "2023-01-01",
+      lastUsed: "2023-09-01",
+      lastModified: "2023-10-01",
+      notes: "Used for extinguishing fires",
+    },
+  ]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [isViewItemDialogOpen, setIsViewItemDialogOpen] = useState(false);
+  const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
-  const [selectedPriority, setSelectedPriority] = useState('all');
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData as InventoryItem[]);
-  
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [exportInProgress, setExportInProgress] = useState(false);
-  const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
-  const [isNewItem, setIsNewItem] = useState(false);
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const highlightId = searchParams.get('highlight');
-    
-    if (highlightId) {
-      setHighlightedItemId(highlightId);
-      setTimeout(() => {
-        const element = document.getElementById(`inventory-item-${highlightId}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 300);
-    }
-  }, [location.search]);
-
-  const filteredItems = inventoryItems.filter(item => {
-    return (
-      (searchTerm === '' || 
-       item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-       item.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedCategory === 'all' || item.category === selectedCategory) &&
-      (selectedLocation === 'all' || item.location === selectedLocation) &&
-      (selectedPriority === 'all' || item.priority === selectedPriority)
-    );
+  // Form logic
+  const form = useForm({
+    resolver: zodResolver(inventoryItemSchema),
+    defaultValues: {
+      item_id: "",
+      name: "",
+      description: "",
+      category: "",
+      quantity: 1,
+      location: "",
+      priority: 'medium',
+      width_cm: 1,
+      depth_cm: 1,
+      height_cm: 1,
+      mass_kg: 0.1,
+      expiryDate: undefined,
+      notes: "",
+    },
   });
 
-  const handleEditItem = (itemId: string) => {
-    const item = inventoryItems.find(item => item.id === itemId);
-    setCurrentItem(item);
-    setIsNewItem(false);
-    setDialogOpen(true);
+  // Handle item selection
+  const handleItemSelect = (itemId) => {
+    setSelectedItems((prevSelectedItems) =>
+      prevSelectedItems.includes(itemId)
+        ? prevSelectedItems.filter((id) => id !== itemId)
+        : [...prevSelectedItems, itemId]
+    );
   };
 
-  const handleAddItem = () => {
-    setCurrentItem(undefined);
-    setIsNewItem(true);
-    setDialogOpen(true);
-  };
-
-  const handleDeleteItem = (itemId: string) => {
-    setInventoryItems(items => items.filter(item => item.id !== itemId));
+  // Handle delete item
+  const handleDeleteItem = (itemId) => {
+    setInventoryItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    setSelectedItems((prevSelectedItems) => prevSelectedItems.filter((id) => id !== itemId));
     toast({
-      title: "Item Deleted",
-      description: "The item has been removed from inventory.",
+      title: "Item deleted",
+      description: "The item has been successfully deleted from the inventory.",
     });
   };
 
-  const handleSaveItem = (item: InventoryItem) => {
-    if (isNewItem) {
-      setInventoryItems(items => [...items, item]);
-      toast({
-        title: "Item Added",
-        description: `${item.name} has been added to the inventory.`,
-      });
-    } else {
-      setInventoryItems(items => 
-        items.map(i => i.id === item.id ? item : i)
+  // Handle view item
+  const handleViewItem = (item) => {
+    setSelectedItem(item);
+    setIsViewItemDialogOpen(true);
+  };
+
+  // Handle edit item
+  const handleEditItem = (item) => {
+    setSelectedItem(item);
+    form.reset(item);
+    setIsEditItemDialogOpen(true);
+  };
+
+  // Handle add item
+  const handleAddItem = () => {
+    setIsAddItemDialogOpen(true);
+    form.reset();
+  };
+
+  // Handle form submission
+  const onSubmit = (values) => {
+    // Simulate adding/editing an item
+    if (selectedItem) {
+      // Editing existing item
+      setInventoryItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === selectedItem.id ? { ...item, ...values } : item
+        )
       );
       toast({
-        title: "Item Updated",
-        description: `${item.name} has been updated successfully.`,
+        title: "Item updated",
+        description: "The item has been successfully updated.",
+      });
+    } else {
+      // Adding new item
+      const newItem = {
+        id: Math.random().toString(36).substring(7),
+        ...values,
+        dateAdded: new Date().toISOString(),
+        lastUsed: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+      };
+      setInventoryItems((prevItems) => [...prevItems, newItem]);
+      toast({
+        title: "Item added",
+        description: "The item has been successfully added to the inventory.",
       });
     }
+
+    // Close dialog and reset form
+    setIsAddItemDialogOpen(false);
+    setIsEditItemDialogOpen(false);
+    setSelectedItem(null);
+    form.reset();
   };
-  
-  const handleExport = () => {
-    setExportInProgress(true);
-    
-    setTimeout(() => {
-      try {
-        const headers = ["ID", "Name", "Category", "Location", "Quantity", "Priority", "Last Used", "Expiry Date"];
-        const csvContent = [
-          headers.join(','),
-          ...inventoryItems.map(item => [
-            item.id,
-            `"${item.name}"`,
-            item.category,
-            `"${item.location}"`,
-            item.quantity,
-            item.priority,
-            item.lastUsed,
-            item.expiryDate || ''
-          ].join(','))
-        ].join('\n');
-        
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `inventory-export-${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        toast({
-          title: "Export Successful",
-          description: "Inventory data has been exported to CSV file.",
-        });
-      } catch (error) {
-        toast({
-          title: "Export Failed",
-          description: "There was an error exporting the inventory data.",
-          variant: "destructive",
-        });
-      } finally {
-        setExportInProgress(false);
-      }
-    }, 1500);
-  };
-  
-  const handleItemsImported = (items: InventoryItem[]) => {
-    setInventoryItems(prev => [...prev, ...items]);
-    setImportDialogOpen(false);
-    
-    toast({
-      title: "Import Successful",
-      description: `${items.length} items have been imported.`,
-    });
+
+  const renderRow = (item) => {
+    const expiryDate = item.expiryDate
+      ? new Date(item.expiryDate).toLocaleDateString()
+      : 'N/A';
+
+    return (
+      <TableRow key={item.id}>
+        <TableCell>
+          <input
+            type="checkbox"
+            checked={selectedItems.includes(item.id)}
+            onChange={() => handleItemSelect(item.id)}
+            className="h-4 w-4 rounded border-gray-300"
+          />
+        </TableCell>
+        <TableCell>{item.item_id}</TableCell>
+        <TableCell>{item.name}</TableCell>
+        <TableCell>{item.category}</TableCell>
+        <TableCell>{item.quantity}</TableCell>
+        <TableCell>{item.location}</TableCell>
+        <TableCell>
+          <Badge variant={item.priority === 'high' ? 'destructive' : item.priority === 'medium' ? 'default' : 'outline'}>
+            {item.priority}
+          </Badge>
+        </TableCell>
+        <TableCell>{expiryDate}</TableCell>
+        <TableCell>
+          <div className="flex items-center space-x-2">
+            <Button size="sm" variant="ghost" onClick={() => handleViewItem(item)}>View</Button>
+            <Button size="sm" variant="ghost" onClick={() => handleEditItem(item)}>Edit</Button>
+            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDeleteItem(item.id)}>Delete</Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-          <p className="text-muted-foreground mt-1">Manage and track all items in the space station</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className="gap-2"
-            onClick={handleExport}
-            disabled={exportInProgress}
-          >
-            <Download size={16} />
-            {exportInProgress ? 'Exporting...' : 'Export'}
+    <div>
+      <div className="flex items-center justify-between space-y-2">
+        <div className="flex items-center space-x-2">
+          <Input placeholder="Search items..." />
+          <Button variant="outline" size="sm">
+            Search
           </Button>
-          
-          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Upload size={16} />
-                Import
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Import Inventory Items</DialogTitle>
-                <DialogDescription>
-                  Upload a CSV file to import inventory items in bulk.
-                </DialogDescription>
-              </DialogHeader>
-              <CSVImporter onItemsImported={handleItemsImported} />
-            </DialogContent>
-          </Dialog>
-          
-          <Button className="gap-2" onClick={handleAddItem}>
-            <Plus size={16} />
-            New Item
+        </div>
+        <div>
+          <Button size="sm" onClick={handleAddItem}>
+            Add Item
           </Button>
         </div>
       </div>
-
-      <Card className="space-card">
-        <CardHeader className="pb-3">
-          <CardTitle>Item Inventory</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Input
-                placeholder="Search by name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-              <Package className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex flex-wrap md:flex-nowrap gap-3">
-              <div className="w-full md:w-auto">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full md:w-[150px]">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="medical">Medical</SelectItem>
-                    <SelectItem value="food">Food</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
-                    <SelectItem value="scientific">Scientific</SelectItem>
-                    <SelectItem value="personal">Personal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-full md:w-auto">
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger className="w-full md:w-[150px]">
-                    <SelectValue placeholder="Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="module-a">Module A</SelectItem>
-                    <SelectItem value="module-b">Module B</SelectItem>
-                    <SelectItem value="cargo-bay">Cargo Bay</SelectItem>
-                    <SelectItem value="lab-storage">Lab Storage</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-full md:w-auto">
-                <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-                  <SelectTrigger className="w-full md:w-[150px]">
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Priorities</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="outline" size="icon">
-                <Filter size={16} />
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-md border bg-card">
+      <div className="py-4">
+        <div className="rounded-md border">
+          <ScrollArea>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  <TableHead className="w-[50px]">Select</TableHead>
+                  <TableHead>Item ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Location</TableHead>
                   <TableHead>Quantity</TableHead>
+                  <TableHead>Location</TableHead>
                   <TableHead>Priority</TableHead>
-                  <TableHead>Last Used</TableHead>
+                  <TableHead>Expiry Date</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow 
-                    key={item.id}
-                    id={`inventory-item-${item.id}`}
-                    className={highlightedItemId === item.id ? 'bg-primary/10 animate-pulse' : ''}
-                  >
-                    <TableCell className="font-mono text-xs">{item.id}</TableCell>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell>{item.location}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        className={
-                          item.priority === 'high' ? 'bg-red-600' : 
-                          item.priority === 'medium' ? 'bg-yellow-600' : 
-                          'bg-green-600'
-                        }
-                      >
-                        {item.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{typeof item.lastUsed === 'string' ? new Date(item.lastUsed).toLocaleDateString() : item.lastUsed.toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <InventoryActions 
-                        itemId={item.id} 
-                        onEdit={() => handleEditItem(item.id)}
-                        onDelete={() => handleDeleteItem(item.id)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredItems.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      <Package className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
-                      <p>No inventory items found</p>
-                    </TableCell>
-                  </TableRow>
-                )}
+                {inventoryItems.map((item) => renderRow(item))}
               </TableBody>
             </Table>
-          </div>
-        </CardContent>
-      </Card>
+          </ScrollArea>
+        </div>
+      </div>
 
-      <InventoryItemDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        item={currentItem}
-        onSave={handleSaveItem}
-        isNewItem={isNewItem}
-      />
+      {/* Add Item Dialog */}
+      <Dialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">Add Item</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+            <DialogDescription>
+              Add a new item to the inventory.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="item_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ITM001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Screwdriver" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="A short description of the item" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tools" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="A1-01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="width_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Width (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="depth_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Depth (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="height_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Height (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="mass_kg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mass (kg)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0.1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="expiryDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col space-y-3">
+                    <FormLabel>Expiry Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-[240px] pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date < new Date()
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Any additional notes about the item" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Add Item</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Item Dialog */}
+      <Dialog open={isViewItemDialogOpen} onOpenChange={setIsViewItemDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>View Item</DialogTitle>
+            <DialogDescription>
+              View details of the selected item.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="space-y-2">
+              <p><strong>Item ID:</strong> {selectedItem.item_id}</p>
+              <p><strong>Name:</strong> {selectedItem.name}</p>
+              <p><strong>Description:</strong> {selectedItem.description}</p>
+              <p><strong>Category:</strong> {selectedItem.category}</p>
+              <p><strong>Quantity:</strong> {selectedItem.quantity}</p>
+              <p><strong>Location:</strong> {selectedItem.location}</p>
+              <p><strong>Priority:</strong> {selectedItem.priority}</p>
+              <p><strong>Width (cm):</strong> {selectedItem.width_cm}</p>
+              <p><strong>Depth (cm):</strong> {selectedItem.depth_cm}</p>
+              <p><strong>Height (cm):</strong> {selectedItem.height_cm}</p>
+              <p><strong>Mass (kg):</strong> {selectedItem.mass_kg}</p>
+              <p><strong>Expiry Date:</strong> {selectedItem.expiryDate ? new Date(selectedItem.expiryDate).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Notes:</strong> {selectedItem.notes}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsViewItemDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditItemDialogOpen} onOpenChange={setIsEditItemDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+            <DialogDescription>
+              Edit the details of the selected item.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="item_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ITM001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Screwdriver" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="A short description of the item" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tools" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="A1-01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="width_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Width (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="depth_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Depth (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="height_cm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Height (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="mass_kg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mass (kg)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0.1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="expiryDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col space-y-3">
+                    <FormLabel>Expiry Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-[240px] pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date < new Date()
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Any additional notes about the item" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Update Item</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
