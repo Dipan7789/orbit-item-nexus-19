@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,14 +25,12 @@ const Inventory = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPriority, setSelectedPriority] = useState('all');
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData as unknown as InventoryItem[]);
   
-  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
   const [isNewItem, setIsNewItem] = useState(false);
 
-  // Filter the inventory data based on search and filters
   const filteredItems = inventoryItems.filter(item => {
     return (
       (searchTerm === '' || 
@@ -45,7 +42,6 @@ const Inventory = () => {
     );
   });
 
-  // Open dialog to edit an item
   const handleEditItem = (itemId: string) => {
     const item = inventoryItems.find(item => item.id === itemId);
     setCurrentItem(item);
@@ -53,14 +49,12 @@ const Inventory = () => {
     setDialogOpen(true);
   };
 
-  // Open dialog to add a new item
   const handleAddItem = () => {
     setCurrentItem(undefined);
     setIsNewItem(true);
     setDialogOpen(true);
   };
 
-  // Delete an item
   const handleDeleteItem = (itemId: string) => {
     setInventoryItems(items => items.filter(item => item.id !== itemId));
     toast({
@@ -69,7 +63,6 @@ const Inventory = () => {
     });
   };
 
-  // Save an item (new or updated)
   const handleSaveItem = (item: InventoryItem) => {
     if (isNewItem) {
       setInventoryItems(items => [...items, item]);
@@ -216,7 +209,6 @@ const Inventory = () => {
         </CardContent>
       </Card>
 
-      {/* Edit/Add Item Dialog */}
       <InventoryItemDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

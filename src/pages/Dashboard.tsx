@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,9 +39,13 @@ const Dashboard = () => {
 
   // Save an item
   const handleSaveItem = (item: InventoryItem) => {
+    // Ensure priority is a valid type
     const newItem: InventoryItem = {
       ...item,
-      priority: typeof item.priority === 'string' ? item.priority : String(item.priority)
+      // Convert priority to one of the accepted values if needed
+      priority: typeof item.priority === 'string' && ['low', 'medium', 'high'].includes(item.priority as string) 
+                ? (item.priority as 'low' | 'medium' | 'high') 
+                : (typeof item.priority === 'number' ? item.priority : 'medium')
     };
     
     setInventoryItems(prev => [...prev, newItem as any]);
@@ -178,7 +183,27 @@ const Dashboard = () => {
               <CardDescription>Items requiring immediate attention</CardDescription>
             </CardHeader>
             <CardContent>
-              <PriorityItems onItemClick={handleItemClick} />
+              {/* Pass the onItemClick prop correctly - create a component adapter */}
+              <div className="space-y-3">
+                {dummyInventoryData
+                  .filter(item => item.priority === 'high')
+                  .slice(0, 4)
+                  .map(item => (
+                    <div 
+                      key={item.id}
+                      className="p-3 border rounded-lg cursor-pointer hover:bg-accent/50"
+                      onClick={() => handleItemClick(item.id)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">{item.category}</p>
+                        </div>
+                        <Badge className="bg-red-600">High</Badge>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </CardContent>
           </Card>
         </div>

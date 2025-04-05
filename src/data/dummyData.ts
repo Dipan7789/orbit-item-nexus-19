@@ -8,7 +8,9 @@ export const dummyInventoryData = [
     location: 'Module A - Cabinet 3',
     quantity: 5,
     priority: 'high',
-    lastUsed: '2025-03-25'
+    lastUsed: '2025-03-25',
+    expiryDate: '2026-05-15',
+    dateAdded: '2024-12-10'
   },
   {
     id: 'FOOD-5678',
@@ -17,7 +19,9 @@ export const dummyInventoryData = [
     location: 'Cargo Bay - Food Storage',
     quantity: 20,
     priority: 'medium',
-    lastUsed: '2025-03-28'
+    lastUsed: '2025-03-28',
+    expiryDate: '2025-08-20',
+    dateAdded: '2025-01-15'
   },
   {
     id: 'TOOL-9101',
@@ -26,7 +30,8 @@ export const dummyInventoryData = [
     location: 'Module B - Tool Rack',
     quantity: 2,
     priority: 'low',
-    lastUsed: '2025-03-15'
+    lastUsed: '2025-03-15',
+    dateAdded: '2024-11-05'
   },
   {
     id: 'LAB-1122',
@@ -35,7 +40,8 @@ export const dummyInventoryData = [
     location: 'Lab Storage - Cabinet 2',
     quantity: 1,
     priority: 'medium',
-    lastUsed: '2025-03-27'
+    lastUsed: '2025-03-27',
+    dateAdded: '2025-02-10'
   },
   {
     id: 'PERS-3344',
@@ -44,7 +50,8 @@ export const dummyInventoryData = [
     location: 'Module A - Personal Locker',
     quantity: 3,
     priority: 'low',
-    lastUsed: '2025-03-22'
+    lastUsed: '2025-03-22',
+    dateAdded: '2024-10-18'
   },
   {
     id: 'OXY-5566',
@@ -53,7 +60,9 @@ export const dummyInventoryData = [
     location: 'Module B - Life Support',
     quantity: 8,
     priority: 'high',
-    lastUsed: '2025-03-28'
+    lastUsed: '2025-03-28',
+    expiryDate: '2026-03-15',
+    dateAdded: '2025-01-05'
   },
   {
     id: 'MED-7788',
@@ -62,7 +71,9 @@ export const dummyInventoryData = [
     location: 'Module A - Cabinet 3',
     quantity: 25,
     priority: 'medium',
-    lastUsed: '2025-03-20'
+    lastUsed: '2025-03-20',
+    expiryDate: '2025-09-30',
+    dateAdded: '2025-02-25'
   },
   {
     id: 'LAB-9900',
@@ -71,7 +82,8 @@ export const dummyInventoryData = [
     location: 'Lab Storage - Drawer 5',
     quantity: 15,
     priority: 'low',
-    lastUsed: '2025-03-18'
+    lastUsed: '2025-03-18',
+    dateAdded: '2024-12-20'
   },
   {
     id: 'FOOD-1122',
@@ -80,7 +92,9 @@ export const dummyInventoryData = [
     location: 'Cargo Bay - Food Storage',
     quantity: 40,
     priority: 'low',
-    lastUsed: '2025-03-25'
+    lastUsed: '2025-03-25',
+    expiryDate: '2025-11-15',
+    dateAdded: '2025-01-22'
   },
   {
     id: 'TOOL-3344',
@@ -89,7 +103,8 @@ export const dummyInventoryData = [
     location: 'Module B - Tool Rack',
     quantity: 1,
     priority: 'high',
-    lastUsed: '2025-03-10'
+    lastUsed: '2025-03-10',
+    dateAdded: '2024-11-15'
   },
   {
     id: 'PERS-5566',
@@ -98,7 +113,8 @@ export const dummyInventoryData = [
     location: 'Module A - Personal Locker',
     quantity: 12,
     priority: 'low',
-    lastUsed: '2025-03-05'
+    lastUsed: '2025-03-05',
+    dateAdded: '2024-10-05'
   },
   {
     id: 'MED-7799',
@@ -107,6 +123,8 @@ export const dummyInventoryData = [
     location: 'Module A - Cabinet 3',
     quantity: 30,
     priority: 'medium',
-    lastUsed: '2025-03-22'
+    lastUsed: '2025-03-22',
+    expiryDate: '2026-02-28',
+    dateAdded: '2025-02-15'
   },
 ];
