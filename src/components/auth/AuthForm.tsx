@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Form, FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 interface AuthFormProps {
   type: 'signin' | 'signup';
@@ -49,64 +52,71 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   };
   
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>{type === 'signin' ? 'Sign In' : 'Sign Up'}</CardTitle>
+    <>
+      <CardHeader className="space-y-1 pb-2">
+        <CardTitle className="text-2xl">{type === 'signin' ? 'Sign In' : 'Sign Up'}</CardTitle>
         <CardDescription>
           {type === 'signin' 
             ? 'Enter your credentials to access your account' 
             : 'Create a new account to get started'}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      
+      <CardContent className="space-y-4 pt-0">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
+            <Label htmlFor="email" className="text-sm font-medium">
+              Email Address
+            </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
+              className="w-full"
               required
+              autoComplete="email"
             />
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
+            <Label htmlFor="password" className="text-sm font-medium">
               Password
-            </label>
+            </Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              className="w-full"
               required
+              autoComplete={type === 'signin' ? 'current-password' : 'new-password'}
             />
           </div>
           
           {type === 'signup' && (
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">
                 Confirm Password
-              </label>
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
+                className="w-full"
                 required
+                autoComplete="new-password"
               />
             </div>
           )}
@@ -120,26 +130,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      
+      <CardFooter className="flex justify-center border-t pt-4">
         <p className="text-sm text-muted-foreground">
           {type === 'signin' ? (
             <>
               Don't have an account?{' '}
-              <a href="/signup" className="text-primary hover:underline">
+              <a href="/signup" className="text-primary hover:underline font-medium">
                 Sign up
               </a>
             </>
           ) : (
             <>
               Already have an account?{' '}
-              <a href="/signin" className="text-primary hover:underline">
+              <a href="/signin" className="text-primary hover:underline font-medium">
                 Sign in
               </a>
             </>
           )}
         </p>
       </CardFooter>
-    </Card>
+    </>
   );
 };
 
