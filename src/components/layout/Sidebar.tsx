@@ -18,15 +18,23 @@ import {
   Clock,
   AlertTriangle,
   MessageSquare,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface SidebarProps {
   isCollapsed: boolean;
+  onChatToggle?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onChatToggle }) => {
   const { user } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -45,14 +53,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
   ];
 
-  // Advanced features (updated list with removed inactive features)
+  // Advanced features
   const advancedFeatures = [
     { name: 'ISS Guidelines', icon: Satellite, path: '/iss-guidelines' },
     { name: 'Quick Navigation', icon: Navigation, path: '/instant-navigation', status: 'available' },
     { name: 'Expiry Forecasting', icon: Clock, path: '/spoilage-simulation', status: 'dev' },
     { name: 'Smart Tagging', icon: Tags, path: '/smart-tagging', status: 'dev' },
     { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'dev' },
-    { name: 'AI Assistant', icon: MessageSquare, path: '/ai-assistant', status: 'dev' },
+    { name: 'AI Assistant', icon: Bot, path: '/ai-assistant', status: 'dev' },
   ];
 
   return (
@@ -86,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 key={feature.path}
                 to={feature.path}
                 className={({ isActive }) => cn(
-                  'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                  'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -115,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                   key={feature.path}
                   to={feature.path}
                   className={({ isActive }) => cn(
-                    'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                    'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : isPlanned
@@ -134,13 +142,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                         <span className="text-xs bg-muted px-1.5 py-0.5 rounded-sm">Coming Soon</span>
                       )}
                       {isInDev && (
-                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm">Beta</span>
+                        <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-500 px-1.5 py-0.5 rounded-sm animate-pulse">Beta</span>
                       )}
                     </div>
+                  )}
+                  {isCollapsed && isInDev && (
+                    <div className="absolute left-14 w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
                   )}
                 </NavLink>
               );
             })}
+          </div>
+          
+          {/* Chat button - always visible */}
+          <div className="mt-6 px-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className={cn(
+                      "w-full flex justify-start items-center gap-2 hover:bg-primary/10 border-dashed border-primary/40",
+                      isCollapsed && "justify-center p-2"
+                    )}
+                    onClick={onChatToggle}
+                  >
+                    <MessageSquare 
+                      size={isCollapsed ? 20 : 16} 
+                      className="text-primary animate-pulse" 
+                    />
+                    {!isCollapsed && <span>Quick Chat</span>}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Open AI Assistant chat</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </nav>
       </ScrollArea>

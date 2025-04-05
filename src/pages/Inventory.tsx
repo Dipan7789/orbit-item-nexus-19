@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,23 +14,49 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Package, Filter, Download, Upload, Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import InventoryActions from '@/components/inventory/InventoryActions';
 import InventoryItemDialog from '@/components/inventory/InventoryItemDialog';
 import { dummyInventoryData } from '@/data/dummyData';
 import { InventoryItem } from '@/types/inventory';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import CSVImporter from '@/components/importexport/CSVImporter';
 
 const Inventory = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPriority, setSelectedPriority] = useState('all');
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData as unknown as InventoryItem[]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(dummyInventoryData as InventoryItem[]);
   
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportInProgress, setExportInProgress] = useState(false);
   const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
   const [isNewItem, setIsNewItem] = useState(false);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+
+  // Extract the highlight parameter from the URL if present
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const highlightId = searchParams.get('highlight');
+    
+    if (highlightId) {
+      setHighlightedItemId(highlightId);
+      // Scroll to the highlighted item after a small delay to ensure rendering
+      setTimeout(() => {
+        const element = document.getElementById(`inventory-item-${highlightId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [location.search]);
 
   const filteredItems = inventoryItems.filter(item => {
     return (
@@ -66,11 +93,78 @@ const Inventory = () => {
   const handleSaveItem = (item: InventoryItem) => {
     if (isNewItem) {
       setInventoryItems(items => [...items, item]);
+      toast({
+        title: "Item Added",
+        description: `${item.name} has been added to the inventory.`,
+      });
     } else {
       setInventoryItems(items => 
         items.map(i => i.id === item.id ? item : i)
       );
+      toast({
+        title: "Item Updated",
+        description: `${item.name} has been updated successfully.`,
+      });
     }
+  };
+  
+  const handleExport = () => {
+    setExportInProgress(true);
+    
+    // Simulate export process
+    setTimeout(() => {
+      try {
+        // Create CSV content
+        const headers = ["ID", "Name", "Category", "Location", "Quantity", "Priority", "Last Used", "Expiry Date"];
+        const csvContent = [
+          headers.join(','),
+          ...inventoryItems.map(item => [
+            item.id,
+            `"${item.name}"`,
+            item.category,
+            `"${item.location}"`,
+            item.quantity,
+            item.priority,
+            item.lastUsed,
+            item.expiryDate || ''
+          ].join(','))
+        ].join('\n');
+        
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `inventory-export-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Export Successful",
+          description: "Inventory data has been exported to CSV file.",
+        });
+      } catch (error) {
+        toast({
+          title: "Export Failed",
+          description: "There was an error exporting the inventory data.",
+          variant: "destructive",
+        });
+      } finally {
+        setExportInProgress(false);
+      }
+    }, 1500);
+  };
+  
+  const handleItemsImported = (items: InventoryItem[]) => {
+    setInventoryItems(prev => [...prev, ...items]);
+    setImportDialogOpen(false);
+    
+    toast({
+      title: "Import Successful",
+      description: `${items.length} items have been imported.`,
+    });
   };
 
   return (
@@ -81,14 +175,34 @@ const Inventory = () => {
           <p className="text-muted-foreground mt-1">Manage and track all items in the space station</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={handleExport}
+            disabled={exportInProgress}
+          >
             <Download size={16} />
-            Export
+            {exportInProgress ? 'Exporting...' : 'Export'}
           </Button>
-          <Button variant="outline" className="gap-2">
-            <Upload size={16} />
-            Import
-          </Button>
+          
+          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Upload size={16} />
+                Import
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Import Inventory Items</DialogTitle>
+                <DialogDescription>
+                  Upload a CSV file to import inventory items in bulk.
+                </DialogDescription>
+              </DialogHeader>
+              <CSVImporter onItemsImported={handleItemsImported} />
+            </DialogContent>
+          </Dialog>
+          
           <Button className="gap-2" onClick={handleAddItem}>
             <Plus size={16} />
             New Item
@@ -176,7 +290,11 @@ const Inventory = () => {
               </TableHeader>
               <TableBody>
                 {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow 
+                    key={item.id}
+                    id={`inventory-item-${item.id}`}
+                    className={highlightedItemId === item.id ? 'bg-primary/10 animate-pulse' : ''}
+                  >
                     <TableCell className="font-mono text-xs">{item.id}</TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.category}</TableCell>
@@ -203,6 +321,14 @@ const Inventory = () => {
                     </TableCell>
                   </TableRow>
                 ))}
+                {filteredItems.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <Package className="mx-auto h-12 w-12 text-muted-foreground/50 mb-2" />
+                      <p>No inventory items found</p>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

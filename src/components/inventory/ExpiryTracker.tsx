@@ -6,6 +6,7 @@ import { Clock, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 
 interface ExpiryItem {
   id: string;
@@ -44,6 +45,8 @@ const formatExpiryMessage = (daysLeft: number): string => {
 };
 
 const ExpiryTracker: React.FC = () => {
+  const navigate = useNavigate();
+  
   // Sample data - in a real app this would come from a database or API
   const items: ExpiryItem[] = [
     {
@@ -93,6 +96,11 @@ const ExpiryTracker: React.FC = () => {
   const critical = items.filter(item => item.daysLeft >= 0 && item.daysLeft < 7);
   const warning = items.filter(item => item.daysLeft >= 7 && item.daysLeft < 30);
   const safe = items.filter(item => item.daysLeft >= 30);
+  
+  // Handle clicking on an item to navigate to its details
+  const handleItemClick = (itemId: string) => {
+    navigate(`/inventory?highlight=${itemId}`);
+  };
 
   return (
     <Card className="shadow-md">
@@ -122,14 +130,14 @@ const ExpiryTracker: React.FC = () => {
           
           <TabsContent value="all" className="space-y-4">
             {items.map((item) => (
-              <ExpiryItemCard key={item.id} item={item} />
+              <ExpiryItemCard key={item.id} item={item} onClick={handleItemClick} />
             ))}
           </TabsContent>
           
           <TabsContent value="expired" className="space-y-4">
             {expired.length > 0 ? (
               expired.map((item) => (
-                <ExpiryItemCard key={item.id} item={item} />
+                <ExpiryItemCard key={item.id} item={item} onClick={handleItemClick} />
               ))
             ) : (
               <p className="text-center text-muted-foreground py-6">No expired items</p>
@@ -139,7 +147,7 @@ const ExpiryTracker: React.FC = () => {
           <TabsContent value="critical" className="space-y-4">
             {critical.length > 0 ? (
               critical.map((item) => (
-                <ExpiryItemCard key={item.id} item={item} />
+                <ExpiryItemCard key={item.id} item={item} onClick={handleItemClick} />
               ))
             ) : (
               <p className="text-center text-muted-foreground py-6">No items critical expiry</p>
@@ -149,7 +157,7 @@ const ExpiryTracker: React.FC = () => {
           <TabsContent value="warning" className="space-y-4">
             {warning.length > 0 ? (
               warning.map((item) => (
-                <ExpiryItemCard key={item.id} item={item} />
+                <ExpiryItemCard key={item.id} item={item} onClick={handleItemClick} />
               ))
             ) : (
               <p className="text-center text-muted-foreground py-6">No items with warning expiry</p>
@@ -167,9 +175,10 @@ const ExpiryTracker: React.FC = () => {
 
 interface ExpiryItemCardProps {
   item: ExpiryItem;
+  onClick: (itemId: string) => void;
 }
 
-const ExpiryItemCard: React.FC<ExpiryItemCardProps> = ({ item }) => {
+const ExpiryItemCard: React.FC<ExpiryItemCardProps> = ({ item, onClick }) => {
   const { id, name, daysLeft, category, location } = item;
   
   // Calculate progress percentage (100% = 90 days, 0% = expired)
@@ -177,7 +186,10 @@ const ExpiryItemCard: React.FC<ExpiryItemCardProps> = ({ item }) => {
   const progressPercentage = Math.max(0, Math.min(100, (daysLeft / maxDays) * 100));
   
   return (
-    <div className="border rounded-lg p-3 shadow-sm bg-background relative">
+    <div 
+      className="border rounded-lg p-3 shadow-sm bg-background relative cursor-pointer transition-colors hover:bg-muted/50"
+      onClick={() => onClick(id)}
+    >
       <div className="flex justify-between items-start">
         <div>
           <div className="font-medium text-sm flex items-center gap-2">

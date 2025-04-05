@@ -4,10 +4,12 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ChatOverlay from '@/components/chat/ChatOverlay';
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const isMobile = useIsMobile();
 
   // Auto-collapse sidebar on mobile by default
@@ -35,6 +37,11 @@ const Layout = () => {
       setSidebarOpen(false);
     }
   };
+  
+  // Toggle chat overlay
+  const toggleChat = () => {
+    setChatOpen(prev => !prev);
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -52,7 +59,7 @@ const Layout = () => {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 lg:static`}
       >
-        <Sidebar isCollapsed={sidebarCollapsed} />
+        <Sidebar isCollapsed={sidebarCollapsed} onChatToggle={toggleChat} />
       </div>
       
       {/* Main content area */}
@@ -62,11 +69,14 @@ const Layout = () => {
         }`}
         onClick={handleMainContentClick}
       >
-        <Header toggleSidebar={toggleSidebar} />
+        <Header toggleSidebar={toggleSidebar} toggleChat={toggleChat} />
         <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6">
           <Outlet />
         </main>
       </div>
+      
+      {/* Chat Overlay */}
+      <ChatOverlay isOpen={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 };

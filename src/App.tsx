@@ -27,8 +27,9 @@ import InstantNavigation from "./pages/InstantNavigation";
 import SpoilageSimulation from "./pages/SpoilageSimulation";
 import SmartTagging from "./pages/SmartTagging";
 
-// Future Features Pages
+// New Feature Pages
 import EventPredictor from "./pages/EventPredictor";
+import AIAssistant from "./pages/AIAssistant";
 
 // Auth Provider
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -86,14 +87,12 @@ const App = () => {
                     <Route path="/iss-guidelines" element={<IssGuidelines />} />
                     <Route path="/settings" element={<Settings />} />
                     
-                    {/* Doraemon-inspired Feature Routes - Implemented */}
+                    {/* Feature Routes */}
                     <Route path="/instant-navigation" element={<InstantNavigation />} />
                     <Route path="/spoilage-simulation" element={<SpoilageSimulation />} />
                     <Route path="/smart-tagging" element={<SmartTagging />} />
-                    
-                    {/* Future Feature Routes */}
                     <Route path="/event-predictor" element={<EventPredictor />} />
-                    <Route path="/ai-assistant" element={<Dashboard />} />
+                    <Route path="/ai-assistant" element={<AIAssistant />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

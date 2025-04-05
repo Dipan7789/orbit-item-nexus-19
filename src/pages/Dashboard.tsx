@@ -19,7 +19,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [inventoryItems, setInventoryItems] = useState(dummyInventoryData);
+  const [inventoryItems, setInventoryItems] = useState(dummyInventoryData as InventoryItem[]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<InventoryItem | undefined>(undefined);
 
@@ -39,16 +39,7 @@ const Dashboard = () => {
 
   // Save an item
   const handleSaveItem = (item: InventoryItem) => {
-    // Ensure priority is a valid type
-    const newItem: InventoryItem = {
-      ...item,
-      // Convert priority to one of the accepted values if needed
-      priority: typeof item.priority === 'string' && ['low', 'medium', 'high'].includes(item.priority as string) 
-                ? (item.priority as 'low' | 'medium' | 'high') 
-                : (typeof item.priority === 'number' ? item.priority : 'medium')
-    };
-    
-    setInventoryItems(prev => [...prev, newItem as any]);
+    setInventoryItems(prev => [...prev, item]);
     toast({
       title: "Item Added",
       description: `${item.name} has been added to the inventory.`,
@@ -183,27 +174,7 @@ const Dashboard = () => {
               <CardDescription>Items requiring immediate attention</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Pass the onItemClick prop correctly - create a component adapter */}
-              <div className="space-y-3">
-                {dummyInventoryData
-                  .filter(item => item.priority === 'high')
-                  .slice(0, 4)
-                  .map(item => (
-                    <div 
-                      key={item.id}
-                      className="p-3 border rounded-lg cursor-pointer hover:bg-accent/50"
-                      onClick={() => handleItemClick(item.id)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">{item.category}</p>
-                        </div>
-                        <Badge className="bg-red-600">High</Badge>
-                      </div>
-                    </div>
-                  ))}
-              </div>
+              <PriorityItems onItemClick={handleItemClick} />
             </CardContent>
           </Card>
         </div>
