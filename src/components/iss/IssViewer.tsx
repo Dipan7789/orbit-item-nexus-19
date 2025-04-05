@@ -412,8 +412,8 @@ declare global {
     detail?: T;
   }
   
-  interface CustomEvent<T = any> {
-    detail: T;
+  interface CustomEvent<T = any> extends Event {
+    readonly detail: T;
   }
 }
 

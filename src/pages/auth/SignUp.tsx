@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthForm from '@/components/auth/AuthForm';
-import { Rocket, Satellite, Star, Planet } from 'lucide-react';
+import { Rocket, Satellite, Star, Globe } from 'lucide-react';
 
 const SignUp = () => {
   const [stars, setStars] = useState<{ top: string; left: string; size: string; delay: string }[]>([]);
@@ -42,7 +42,7 @@ const SignUp = () => {
           <Satellite size={40} />
         </div>
         <div className="absolute bottom-1/4 right-1/3 text-purple-400 animate-float opacity-40" style={{ animationDelay: "2s" }}>
-          <Planet size={64} />
+          <Globe size={64} />
         </div>
         <div className="absolute top-1/2 left-2/3 text-amber-300 animate-float opacity-30" style={{ animationDelay: "3s" }}>
           <Star size={48} />
