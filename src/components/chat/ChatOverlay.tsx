@@ -271,7 +271,7 @@ const ChatOverlay: React.FC<ChatOverlayProps> = ({ isOpen, onClose }) => {
         </>
       )}
       
-      <style jsx global>{`
+      <style>{`
         .dot-typing {
           position: relative;
           width: 6px;

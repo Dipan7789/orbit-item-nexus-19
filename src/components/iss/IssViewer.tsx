@@ -1,494 +1,275 @@
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
 
 export const IssViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('exterior');
-  const [rotationSpeed, setRotationSpeed] = useState(50);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [showPlanets, setShowPlanets] = useState(true);
   
-  // Simulate loading progress
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLoadingProgress(prev => {
-        const newValue = prev + Math.random() * 10;
-        if (newValue >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setIsLoading(false), 500);
-          return 100;
-        }
-        return newValue;
-      });
-    }, 200);
+    if (!containerRef.current) return;
     
-    return () => clearInterval(interval);
-  }, []);
-  
-  useEffect(() => {
-    if (!isLoading && canvasRef.current && containerRef.current) {
-      initializeIssViewer();
-    }
-  }, [isLoading]);
-  
-  // Update rotation when mouse moves while dragging
-  useEffect(() => {
-    if (isDragging && !isLoading) {
-      const sensitivity = rotationSpeed / 100; // Use rotation speed as sensitivity factor
-      requestAnimationFrame(() => {
-        setRotation(prev => ({
-          x: prev.x + (mousePosition.y - prev.y) * 0.01 * sensitivity,
-          y: prev.y + (mousePosition.x - prev.x) * 0.01 * sensitivity
-        }));
-      });
-      renderIss();
-    }
-  }, [isDragging, mousePosition, rotationSpeed]);
-  
-  // Auto-rotation effect
-  useEffect(() => {
-    let animationId: number;
+    // Load the 3D script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/three@0.133.0/build/three.min.js';
+    script.async = true;
     
-    const autoRotateAnimation = () => {
-      if (autoRotate && !isDragging) {
-        setRotation(prev => ({
-          x: prev.x + 0.001 * (rotationSpeed / 50),
-          y: prev.y + 0.002 * (rotationSpeed / 50)
-        }));
-        renderIss();
-      }
-      animationId = requestAnimationFrame(autoRotateAnimation);
-    };
+    script.onload = initThreeJS;
     
-    if (!isLoading) {
-      animationId = requestAnimationFrame(autoRotateAnimation);
-    }
+    document.body.appendChild(script);
     
     return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, [autoRotate, isDragging, isLoading, rotationSpeed, showPlanets]);
-  
-  const initializeIssViewer = () => {
-    renderIss();
-  };
-  
-  const renderIss = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    // Simulate a 3D rendering context (in a real implementation, this would use Three.js)
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Set canvas size
-    canvas.width = containerRef.current?.clientWidth || 800;
-    canvas.height = containerRef.current?.clientHeight || 600;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw a gradient background (space)
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#000510');
-    gradient.addColorStop(1, '#001030');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw some stars
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < 300; i++) {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height;
-      const radius = Math.random() * 1.5;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Draw Sun (if planets are shown)
-    if (showPlanets) {
-      const sunX = canvas.width * 0.1;
-      const sunY = canvas.height * 0.1;
-      const sunRadius = 40;
-      
-      // Sun glow
-      const sunGlow = ctx.createRadialGradient(
-        sunX, sunY, 0,
-        sunX, sunY, sunRadius * 2
-      );
-      sunGlow.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
-      sunGlow.addColorStop(0.5, 'rgba(255, 150, 20, 0.3)');
-      sunGlow.addColorStop(1, 'rgba(255, 100, 0, 0)');
-      
-      ctx.fillStyle = sunGlow;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Sun itself
-      const sunGradient = ctx.createRadialGradient(
-        sunX, sunY, 0,
-        sunX, sunY, sunRadius
-      );
-      sunGradient.addColorStop(0, '#FFF9C4');
-      sunGradient.addColorStop(0.8, '#FF9800');
-      sunGradient.addColorStop(1, '#FF5722');
-      
-      ctx.fillStyle = sunGradient;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Draw planets
-      const planets = [
-        { name: 'Mercury', distance: 120, radius: 5, color: '#A9A9A9', speed: 0.02 },
-        { name: 'Venus', distance: 170, radius: 8, color: '#D4A76A', speed: 0.015 },
-        { name: 'Earth', distance: 230, radius: 10, color: '#4B6CB7', speed: 0.01 },
-        { name: 'Mars', distance: 280, radius: 7, color: '#C64F3C', speed: 0.008 }
-      ];
-      
-      const time = Date.now() * 0.001;
-      
-      planets.forEach(planet => {
-        const angle = time * planet.speed;
-        const planetX = sunX + Math.cos(angle) * planet.distance;
-        const planetY = sunY + Math.sin(angle) * planet.distance;
-        
-        // Draw orbit path
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, planet.distance, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // Draw planet
-        ctx.fillStyle = planet.color;
-        ctx.beginPath();
-        ctx.arc(planetX, planetY, planet.radius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Planet name only if close enough
-        const distanceToCenter = Math.sqrt(Math.pow(planetX - canvas.width/2, 2) + Math.pow(planetY - canvas.height/2, 2));
-        if (distanceToCenter < canvas.width * 0.4) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = '10px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(planet.name, planetX, planetY + planet.radius + 15);
+      document.body.removeChild(script);
+      // Clean up any THREE.js resources if needed
+      if (containerRef.current) {
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild);
         }
-      });
-    }
+      }
+    };
+  }, []);
+  
+  const initThreeJS = () => {
+    // Make sure THREE is loaded globally
+    if (typeof THREE === 'undefined') return;
     
-    // Draw Earth
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height + 300, 400, 0, Math.PI * 2);
-    const earthGradient = ctx.createRadialGradient(
-      canvas.width / 2, canvas.height + 300, 300,
-      canvas.width / 2, canvas.height + 300, 400
+    const container = containerRef.current;
+    if (!container) return;
+    
+    // Scene setup
+    const scene = new THREE.Scene();
+    
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(
+      45, 
+      container.clientWidth / container.clientHeight, 
+      0.1, 
+      1000
     );
-    earthGradient.addColorStop(0, '#006994');
-    earthGradient.addColorStop(1, '#001030');
-    ctx.fillStyle = earthGradient;
-    ctx.fill();
+    camera.position.z = 15;
     
-    // Draw clouds
-    ctx.globalAlpha = 0.4;
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < 10; i++) {
-      const x = (canvas.width / 2) + Math.random() * 200 - 100;
-      const y = canvas.height + 200 + Math.random() * 100 - 50;
-      const radiusX = 30 + Math.random() * 50;
-      const radiusY = 20 + Math.random() * 30;
-      
-      ctx.beginPath();
-      ctx.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
     
-    // Calculate ISS position based on rotation
-    const issX = canvas.width / 2;
-    const issY = canvas.height / 2;
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
     
-    // Apply rotations (simplified 3D rotation projection)
-    const rotationFactorX = Math.sin(rotation.x);
-    const rotationFactorY = Math.sin(rotation.y);
-    const scaleX = Math.cos(rotation.y) * 0.3 + 0.7; // Scale for perspective
-    const scaleY = Math.cos(rotation.x) * 0.3 + 0.7;
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 3, 5);
+    scene.add(directionalLight);
     
-    // Main body with rotation
-    ctx.save();
-    ctx.translate(issX, issY);
-    ctx.scale(scaleX, scaleY);
-    ctx.rotate(rotationFactorY * 0.2); // Apply slight rotation based on mouse Y
-    
+    // Create a simple ISS model (in a real app, we'd load a detailed model)
     // Main body
-    ctx.fillStyle = '#CCCCCC';
-    ctx.fillRect(-100, -20, 200, 40);
+    const mainBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.5, 1.5, 6, 16),
+      new THREE.MeshPhongMaterial({ color: 0xcccccc })
+    );
+    mainBody.rotation.z = Math.PI / 2;
+    scene.add(mainBody);
     
-    // Solar panels (adjust position based on rotation)
-    ctx.fillStyle = '#3366CC';
+    // Solar panels
+    const solarPanel1 = createSolarPanel();
+    solarPanel1.position.set(0, 3, 0);
+    scene.add(solarPanel1);
     
-    // Left panel
-    ctx.save();
-    ctx.translate(-150, 0);
-    ctx.rotate(rotationFactorX * 0.5); // Rotate panel based on mouse X
-    ctx.fillRect(-20, -60, 40, 120);
-    ctx.restore();
-    
-    // Right panel
-    ctx.save();
-    ctx.translate(150, 0);
-    ctx.rotate(rotationFactorX * 0.5); // Rotate panel based on mouse X
-    ctx.fillRect(-20, -60, 40, 120);
-    ctx.restore();
-    
-    // Module connectors
-    ctx.fillStyle = '#999999';
-    ctx.fillRect(-125, -10, 25, 20); // Left connector
-    ctx.fillRect(100, -10, 25, 20); // Right connector
+    const solarPanel2 = createSolarPanel();
+    solarPanel2.position.set(0, -3, 0);
+    scene.add(solarPanel2);
     
     // Modules
-    ctx.fillStyle = '#DDDDDD';
-    ctx.fillRect(-100, -30, 50, 60); // Left module
-    ctx.fillRect(50, -30, 50, 60); // Right module
+    const module1 = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 16, 16),
+      new THREE.MeshPhongMaterial({ color: 0xaaaaaa })
+    );
+    module1.position.set(3, 0, 0);
+    scene.add(module1);
     
-    // Additional modules (visible based on rotation)
-    const modulesOpacity = Math.max(0.2, Math.min(1, (rotationFactorY + 1) / 1.5));
-    ctx.globalAlpha = modulesOpacity;
-    ctx.fillStyle = '#BBBBBB';
+    const module2 = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 16, 16),
+      new THREE.MeshPhongMaterial({ color: 0x999999 })
+    );
+    module2.position.set(-3, 0, 0);
+    scene.add(module2);
     
-    // Front modules
-    if (rotationFactorY > -0.5) {
-      ctx.fillRect(-20, -40, 40, 80); // Center module
-    }
+    // Add connector tubes
+    const tube1 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
+      new THREE.MeshPhongMaterial({ color: 0x888888 })
+    );
+    tube1.position.set(2, 0, 0);
+    tube1.rotation.z = Math.PI / 2;
+    scene.add(tube1);
     
-    // Back modules
-    if (rotationFactorY < 0.5) {
-      ctx.fillRect(-75, -15, 30, 30); // Small back module
-      ctx.fillRect(45, -15, 30, 30); // Small back module
-    }
+    const tube2 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
+      new THREE.MeshPhongMaterial({ color: 0x888888 })
+    );
+    tube2.position.set(-2, 0, 0);
+    tube2.rotation.z = Math.PI / 2;
+    scene.add(tube2);
     
-    ctx.globalAlpha = 1;
+    // Animation loop
+    let animationFrame: number;
+    const animate = () => {
+      animationFrame = requestAnimationFrame(animate);
+      
+      // Rotate the entire ISS model
+      scene.rotation.y += 0.005;
+      
+      renderer.render(scene, camera);
+    };
     
-    // Add highlights for 3D effect
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.5;
-    ctx.strokeRect(-100, -20, 200, 40); // Main body highlight
-    ctx.globalAlpha = 1;
+    animate();
     
-    ctx.restore();
-    
-    // Label
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('International Space Station', issX, issY + 120);
-    
-    // View mode indicator
-    const modeText = viewMode.charAt(0).toUpperCase() + viewMode.slice(1) + ' View';
-    ctx.font = '12px Arial';
-    ctx.fillText(modeText, issX, issY + 140);
-  };
-  
-  // Handle window resize
-  useEffect(() => {
+    // Handle window resize
     const handleResize = () => {
-      if (!isLoading) {
-        renderIss();
-      }
+      if (!container) return;
+      
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
     };
     
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isLoading, rotation, showPlanets]);
-  
-  // Mouse event handlers for interactive rotation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setAutoRotate(false);
-    setMousePosition({
-      x: e.clientX,
-      y: e.clientY
-    });
+    
+    // Add orbit controls
+    setupMouseControl(scene, camera, renderer);
+    
+    // Cleanup function for when component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrame);
+      renderer.dispose();
+    };
   };
   
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      setMousePosition({
+  // Helper function to create solar panels
+  function createSolarPanel() {
+    const group = new THREE.Group();
+    
+    // Solar panel
+    const panel = new THREE.Mesh(
+      new THREE.BoxGeometry(6, 0.1, 2),
+      new THREE.MeshPhongMaterial({ color: 0x2266aa })
+    );
+    group.add(panel);
+    
+    // Support arm
+    const arm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.1, 2, 8),
+      new THREE.MeshPhongMaterial({ color: 0x888888 })
+    );
+    arm.position.set(0, 0, 0);
+    arm.rotation.x = Math.PI / 2;
+    group.add(arm);
+    
+    return group;
+  }
+  
+  // Setup mouse rotation controls
+  function setupMouseControl(scene, camera, renderer) {
+    let isDragging = false;
+    let previousMousePosition = {
+      x: 0,
+      y: 0
+    };
+    
+    const handleMouseDown = (e) => {
+      isDragging = true;
+    };
+    
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      
+      const deltaMove = {
+        x: e.clientX - previousMousePosition.x,
+        y: e.clientY - previousMousePosition.y
+      };
+      
+      // Rotate the scene based on mouse movement
+      scene.rotation.y += deltaMove.x * 0.01;
+      scene.rotation.x += deltaMove.y * 0.01;
+      
+      previousMousePosition = {
         x: e.clientX,
         y: e.clientY
-      });
-    }
-  };
-  
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-  
-  // Add mouse leave handler to handle cases where mouse up occurs outside the component
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-  
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
+      };
+      
+      renderer.render(scene, camera);
     };
-  }, []);
-  
-  const handleResetView = () => {
-    setRotation({ x: 0, y: 0 });
-    setAutoRotate(true);
-  };
-  
-  const handleToggleAutoRotate = () => {
-    setAutoRotate(!autoRotate);
-  };
-  
-  const handleTogglePlanets = () => {
-    setShowPlanets(!showPlanets);
-  };
-  
-  const handleScreenshot = () => {
-    if (canvasRef.current) {
-      const dataUrl = canvasRef.current.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = 'iss-screenshot.png';
-      link.href = dataUrl;
-      link.click();
-    }
-  };
+    
+    const handleMouseUp = () => {
+      isDragging = false;
+    };
+    
+    // Attach event listeners to renderer DOM element
+    const element = renderer.domElement;
+    element.addEventListener('mousedown', handleMouseDown, false);
+    element.addEventListener('mousemove', handleMouseMove, false);
+    element.addEventListener('mouseup', handleMouseUp, false);
+    element.addEventListener('mouseleave', handleMouseUp, false);
+    
+    // Add touch support
+    element.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        previousMousePosition = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        };
+        isDragging = true;
+      }
+    }, false);
+    
+    element.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        const deltaMove = {
+          x: e.touches[0].clientX - previousMousePosition.x,
+          y: e.touches[0].clientY - previousMousePosition.y
+        };
+        
+        scene.rotation.y += deltaMove.x * 0.01;
+        scene.rotation.x += deltaMove.y * 0.01;
+        
+        previousMousePosition = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        };
+        
+        renderer.render(scene, camera);
+      }
+    }, false);
+    
+    element.addEventListener('touchend', () => {
+      isDragging = false;
+    }, false);
+  }
   
   return (
-    <div 
-      className="relative h-full" 
-      ref={containerRef}
-    >
-      {isLoading ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
-          <div className="text-xl font-bold text-white mb-4">Loading ISS Model</div>
-          <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary rounded-full transition-all duration-300" 
-              style={{ width: `${loadingProgress}%` }}
-            ></div>
-          </div>
-          <div className="text-sm text-muted-foreground mt-2">
-            {Math.round(loadingProgress)}% Complete
-          </div>
-        </div>
-      ) : (
-        <>
-          <canvas 
-            ref={canvasRef} 
-            className="w-full h-full cursor-move"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-          />
-          
-          <div className="absolute top-4 left-4 space-y-2 pointer-events-auto">
-            <div className="w-48">
-              <Select value={viewMode} onValueChange={setViewMode}>
-                <SelectTrigger className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors">
-                  <SelectValue placeholder="View Mode" />
-                </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-sm">
-                  <SelectItem value="exterior">Exterior View</SelectItem>
-                  <SelectItem value="interior">Interior View</SelectItem>
-                  <SelectItem value="xray">X-Ray View</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors">
-              <span className="text-xs">Rotation Speed</span>
-              <Slider
-                value={[rotationSpeed]}
-                min={0}
-                max={100}
-                step={1}
-                onValueChange={([value]) => setRotationSpeed(value)}
-                className="w-32"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
-                onClick={handleResetView}
-              >
-                Reset View
-              </Button>
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors"
-                onClick={handleScreenshot}
-              >
-                Screenshot
-              </Button>
-            </div>
-            
-            <Button
-              size="sm"
-              variant={autoRotate ? "default" : "outline"}
-              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors w-full"
-              onClick={handleToggleAutoRotate}
-            >
-              {autoRotate ? "Auto-Rotation: ON" : "Auto-Rotation: OFF"}
-            </Button>
-            
-            <Button
-              size="sm"
-              variant={showPlanets ? "default" : "outline"}
-              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors w-full"
-              onClick={handleTogglePlanets}
-            >
-              {showPlanets ? "Planets: VISIBLE" : "Planets: HIDDEN"}
-            </Button>
-          </div>
-          
-          <div className="absolute bottom-4 right-4 w-72 pointer-events-auto">
-            <Alert className="bg-background/80 backdrop-blur-sm border-amber-500 hover:bg-background/90 transition-colors">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              <AlertTitle className="text-amber-500">Interactive Controls</AlertTitle>
-              <AlertDescription className="text-xs">
-                Click and drag to rotate the ISS model. Use the rotation speed slider to adjust sensitivity.
-                Reset the view or toggle auto-rotation with the control buttons.
-              </AlertDescription>
-            </Alert>
-          </div>
-          
-          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-md hover:bg-background/90 transition-colors pointer-events-auto">
-            <div className="text-xs text-muted-foreground">
-              Altitude: 420 km • Velocity: 27,600 km/h • Orbit: 92 min
-            </div>
-          </div>
-        </>
-      )}
+    <div className="relative h-full">
+      <div ref={containerRef} className="w-full h-full flex items-center justify-center">
+        {/* 3D viewer will be rendered here */}
+      </div>
+      
+      <div className="absolute bottom-4 left-4">
+        <Alert className="bg-background/80 backdrop-blur-sm border max-w-xs">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-sm">Interactive Model</AlertTitle>
+          <AlertDescription className="text-xs">
+            Drag to rotate the ISS model. This is a simplified 3D representation.
+          </AlertDescription>
+        </Alert>
+      </div>
     </div>
   );
 };
+
+// Add a THREE type declaration for TypeScript
+declare global {
+  interface Window {
+    THREE: any;
+  }
+  const THREE: any;
+}

@@ -94,7 +94,8 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }: {
     }),
   }));
 
-  const utilizationPercent = zone.used;
+  const totalSpaceUsed = items.reduce((total, item) => total + (item.spaceUsed || 0), 0);
+  const utilizationPercent = zone.capacity > 0 ? (totalSpaceUsed / zone.capacity) * 100 : 0;
   
   const getUtilizationColor = (percent: number) => {
     if (percent < 50) return 'bg-green-500';
@@ -214,20 +215,20 @@ const StorageMap = () => {
     });
     
     inventoryItems.forEach(item => {
-      zoneUsage[item.zoneId] = (zoneUsage[item.zoneId] || 0) + item.spaceUsed;
+      zoneUsage[item.zoneId] = (zoneUsage[item.zoneId] || 0) + (item.spaceUsed || 0);
     });
     
     setStorageZones(prevZones => 
       prevZones.map(zone => ({
         ...zone,
-        used: Math.min(100, zoneUsage[zone.id])
+        used: Math.min(100, (zoneUsage[zone.id] / zone.capacity) * 100)
       }))
     );
   };
   
   useEffect(() => {
     calculateZoneUtilization();
-  }, []);
+  }, [inventoryItems]);
   
   const generateRecommendations = () => {
     setIsGeneratingRecommendations(true);

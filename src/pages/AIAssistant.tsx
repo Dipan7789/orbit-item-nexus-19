@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,6 @@ const AIAssistant = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Quick action suggestions
   const quickActions: QuickAction[] = [
     {
       id: 'find-item',
@@ -96,9 +94,7 @@ const AIAssistant = () => {
     }
   ];
   
-  // Simulate assistant responses - in a real app, this would be an API call
   const getAssistantResponse = async (userMessage: string): Promise<string> => {
-    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
     
     const lowerMessage = userMessage.toLowerCase();
@@ -140,12 +136,10 @@ const AIAssistant = () => {
     return "I understand you're asking about '" + userMessage + "'. I can help with inventory searches, emergency procedures, expiring items, and more. Could you provide more details about what you need?";
   };
   
-  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
-  // Focus input when chat opens
   useEffect(() => {
     if (isChatOpen) {
       setTimeout(() => {
@@ -154,7 +148,6 @@ const AIAssistant = () => {
     }
   }, [isChatOpen]);
   
-  // Send message
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
     
@@ -180,14 +173,12 @@ const AIAssistant = () => {
     try {
       const response = await getAssistantResponse(inputValue);
       
-      // Replace loading message with actual response
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMessage.id 
           ? { ...msg, text: response, isLoading: false } 
           : msg
       ));
     } catch (error) {
-      // Handle error
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMessage.id 
           ? { 
@@ -209,7 +200,6 @@ const AIAssistant = () => {
     }
   };
   
-  // Handle quick action button click
   const handleQuickAction = (actionMessage: string) => {
     setInputValue(actionMessage);
     setTimeout(() => {
@@ -217,24 +207,20 @@ const AIAssistant = () => {
     }, 100);
   };
   
-  // Handle input key press
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
   
-  // Format timestamp
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  // Toggle chat open/closed
   const toggleChat = () => {
     setIsChatOpen(prev => !prev);
   };
   
-  // Clear chat history
   const clearChat = () => {
     setMessages([
       {
@@ -370,7 +356,7 @@ const AIAssistant = () => {
         </CardContent>
       </Card>
       
-      <style jsx global>{`
+      <style>{`
         .dot-typing {
           position: relative;
           width: 10px;

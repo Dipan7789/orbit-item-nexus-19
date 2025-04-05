@@ -187,9 +187,9 @@ const StorageVisualization: React.FC<StorageVisualizationProps> = ({
                           <div className="text-xs text-gray-600">
                             {item.width_cm || 0}×{item.depth_cm || 0}×{item.height_cm || 0} cm • {item.mass_kg || 0} kg
                           </div>
-                          {(item.expiryDate || item.expiry_date) && (
+                          {(item.expiryDate) && (
                             <div className="text-xs text-red-600 mt-1">
-                              Expires: {String(item.expiryDate || item.expiry_date)}
+                              Expires: {String(item.expiryDate)}
                             </div>
                           )}
                         </div>

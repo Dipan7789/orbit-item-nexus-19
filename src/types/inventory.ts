@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface InventoryItem {
@@ -17,6 +18,8 @@ export interface InventoryItem {
   mass_kg?: number;
   preferred_zone?: string;
   usage_limit?: number;
+  description?: string;  // Added to resolve the TS error
+  notes?: string;        // Added to resolve the TS error
 }
 
 export interface StorageContainer {
@@ -28,6 +31,14 @@ export interface StorageContainer {
   items?: InventoryItem[];
   capacity?: number;
   utilization?: number;
+}
+
+// Helper function for calculating volume of an item
+export function calculateVolume(item: InventoryItem): number {
+  if (item.width_cm && item.depth_cm && item.height_cm) {
+    return item.width_cm * item.depth_cm * item.height_cm;
+  }
+  return 0;
 }
 
 export function findOptimalPlacement(

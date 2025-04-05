@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ChatOverlay from '@/components/chat/ChatOverlay';
+import FloatingChatButton from '@/components/chat/FloatingChatButton';
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -74,6 +75,9 @@ const Layout = () => {
           <Outlet />
         </main>
       </div>
+      
+      {/* Floating Chat Button */}
+      <FloatingChatButton onClick={toggleChat} isVisible={!chatOpen} />
       
       {/* Chat Overlay */}
       <ChatOverlay isOpen={chatOpen} onClose={() => setChatOpen(false)} />
