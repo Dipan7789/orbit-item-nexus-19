@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,14 +7,13 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Package, Move, RefreshCw, ArrowRight, Lightbulb } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 
-// Define item types for drag and drop
 const ItemTypes = {
   INVENTORY_ITEM: 'inventoryItem'
 };
 
-// Mock data for storage zones
-const storageZones = [
+const initialStorageZones = [
   { id: 'zone-a', name: 'Module A', capacity: 100, used: 65 },
   { id: 'zone-b', name: 'Module B', capacity: 100, used: 42 },
   { id: 'zone-c', name: 'Cargo Bay', capacity: 100, used: 87 },
@@ -23,16 +21,15 @@ const storageZones = [
   { id: 'zone-e', name: 'Personal Quarters', capacity: 100, used: 56 },
 ];
 
-// Mock inventory items
 const initialInventoryItems = [
-  { id: 'item-1', name: 'Medical Kit', category: 'Medical', size: 'Medium', weight: '2.4kg', zoneId: 'zone-a' },
-  { id: 'item-2', name: 'Food Rations', category: 'Food', size: 'Large', weight: '5.1kg', zoneId: 'zone-a' },
-  { id: 'item-3', name: 'Oxygen Canisters', category: 'Life Support', size: 'Large', weight: '8.3kg', zoneId: 'zone-b' },
-  { id: 'item-4', name: 'Science Equipment', category: 'Scientific', size: 'Medium', weight: '3.7kg', zoneId: 'zone-d' },
-  { id: 'item-5', name: 'Tool Kit', category: 'Equipment', size: 'Small', weight: '1.2kg', zoneId: 'zone-c' },
-  { id: 'item-6', name: 'Personal Items', category: 'Personal', size: 'Small', weight: '0.8kg', zoneId: 'zone-e' },
-  { id: 'item-7', name: 'Water Filters', category: 'Life Support', size: 'Medium', weight: '4.5kg', zoneId: 'zone-b' },
-  { id: 'item-8', name: 'Emergency Supplies', category: 'Emergency', size: 'Medium', weight: '3.6kg', zoneId: 'zone-c' },
+  { id: 'item-1', name: 'Medical Kit', category: 'Medical', size: 'Medium', weight: '2.4kg', zoneId: 'zone-a', spaceUsed: 10 },
+  { id: 'item-2', name: 'Food Rations', category: 'Food', size: 'Large', weight: '5.1kg', zoneId: 'zone-a', spaceUsed: 20 },
+  { id: 'item-3', name: 'Oxygen Canisters', category: 'Life Support', size: 'Large', weight: '8.3kg', zoneId: 'zone-b', spaceUsed: 25 },
+  { id: 'item-4', name: 'Science Equipment', category: 'Scientific', size: 'Medium', weight: '3.7kg', zoneId: 'zone-d', spaceUsed: 15 },
+  { id: 'item-5', name: 'Tool Kit', category: 'Equipment', size: 'Small', weight: '1.2kg', zoneId: 'zone-c', spaceUsed: 8 },
+  { id: 'item-6', name: 'Personal Items', category: 'Personal', size: 'Small', weight: '0.8kg', zoneId: 'zone-e', spaceUsed: 5 },
+  { id: 'item-7', name: 'Water Filters', category: 'Life Support', size: 'Medium', weight: '4.5kg', zoneId: 'zone-b', spaceUsed: 17 },
+  { id: 'item-8', name: 'Emergency Supplies', category: 'Emergency', size: 'Medium', weight: '3.6kg', zoneId: 'zone-c', spaceUsed: 12 },
 ];
 
 interface DragItem {
@@ -40,7 +37,6 @@ interface DragItem {
   sourceZoneId: string;
 }
 
-// Draggable inventory item component
 const InventoryItem = ({ item, index }: { item: any, index: number }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.INVENTORY_ITEM,
@@ -77,8 +73,12 @@ const InventoryItem = ({ item, index }: { item: any, index: number }) => {
   );
 };
 
-// Droppable storage zone component
-const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { zone: any, items: any[], onItemDrop: (itemId: string, sourceZoneId: string, targetZoneId: string) => void, onOptimize: (zoneId: string) => void }) => {
+const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { 
+  zone: any, 
+  items: any[], 
+  onItemDrop: (itemId: string, sourceZoneId: string, targetZoneId: string) => void, 
+  onOptimize: (zoneId: string) => void 
+}) => {
   const { toast } = useToast();
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.INVENTORY_ITEM,
@@ -94,10 +94,8 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { zone: any, items
     }),
   }));
 
-  // Calculate utilization percentage
-  const utilizationPercent = (zone.used / zone.capacity) * 100;
+  const utilizationPercent = zone.used;
   
-  // Determine utilization color
   const getUtilizationColor = (percent: number) => {
     if (percent < 50) return 'bg-green-500';
     if (percent < 80) return 'bg-yellow-500';
@@ -128,12 +126,7 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { zone: any, items
           <span className="text-muted-foreground">Utilization</span>
           <span>{utilizationPercent.toFixed(0)}%</span>
         </div>
-        <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className={`h-2 rounded-full ${getUtilizationColor(utilizationPercent)}`} 
-            style={{ width: `${utilizationPercent}%` }}
-          ></div>
-        </div>
+        <Progress value={utilizationPercent} className="h-2" />
       </div>
       
       <div className="text-sm mb-2">
@@ -154,7 +147,6 @@ const StorageZone = ({ zone, items, onItemDrop, onOptimize }: { zone: any, items
   );
 };
 
-// AI Recommendation component
 const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading }: { recommendations: any[], onApplyRecommendation: (id: string) => void, isLoading: boolean }) => {
   return (
     <Card>
@@ -210,16 +202,37 @@ const AIRecommendation = ({ recommendations, onApplyRecommendation, isLoading }:
 const StorageMap = () => {
   const { toast } = useToast();
   const [inventoryItems, setInventoryItems] = useState(initialInventoryItems);
+  const [storageZones, setStorageZones] = useState(initialStorageZones);
   const [recommendations, setRecommendations] = useState<Array<any>>([]);
   const [isGeneratingRecommendations, setIsGeneratingRecommendations] = useState(false);
   
-  // Generate AI recommendations
+  const calculateZoneUtilization = () => {
+    const zoneUsage: Record<string, number> = {};
+    
+    storageZones.forEach(zone => {
+      zoneUsage[zone.id] = 0;
+    });
+    
+    inventoryItems.forEach(item => {
+      zoneUsage[item.zoneId] = (zoneUsage[item.zoneId] || 0) + item.spaceUsed;
+    });
+    
+    setStorageZones(prevZones => 
+      prevZones.map(zone => ({
+        ...zone,
+        used: Math.min(100, zoneUsage[zone.id])
+      }))
+    );
+  };
+  
+  useEffect(() => {
+    calculateZoneUtilization();
+  }, []);
+  
   const generateRecommendations = () => {
     setIsGeneratingRecommendations(true);
     
-    // Simulating API call delay
     setTimeout(() => {
-      // These would come from an actual AI analysis in a real app
       const newRecommendations = [
         {
           id: 'rec-1',
@@ -251,12 +264,10 @@ const StorageMap = () => {
     }, 2000);
   };
   
-  // Effect to generate initial recommendations
   useEffect(() => {
     generateRecommendations();
   }, []);
 
-  // Handle dropping an item into a zone
   const handleItemDrop = (itemId: string, sourceZoneId: string, targetZoneId: string) => {
     if (sourceZoneId === targetZoneId) return;
     
@@ -268,16 +279,17 @@ const StorageMap = () => {
       )
     );
     
-    // Generate new recommendations after moving items
-    generateRecommendations();
+    setTimeout(() => {
+      calculateZoneUtilization();
+      
+      generateRecommendations();
+    }, 100);
   };
   
-  // Apply an AI recommendation
   const handleApplyRecommendation = (recId: string) => {
     const recommendation = recommendations.find(rec => rec.id === recId);
     
     if (recommendation) {
-      // Apply all actions in the recommendation
       recommendation.actions.forEach(action => {
         setInventoryItems(items => 
           items.map(item => 
@@ -288,8 +300,11 @@ const StorageMap = () => {
         );
       });
       
-      // Remove the applied recommendation
       setRecommendations(recommendations.filter(rec => rec.id !== recId));
+      
+      setTimeout(() => {
+        calculateZoneUtilization();
+      }, 100);
       
       toast({
         title: "Recommendation Applied",
@@ -298,19 +313,15 @@ const StorageMap = () => {
     }
   };
   
-  // Optimize a specific zone
   const handleOptimizeZone = (zoneId: string) => {
     toast({
       title: "Zone Optimization",
       description: `Optimizing ${storageZones.find(z => z.id === zoneId)?.name}...`,
     });
     
-    // In a real app, this would call an AI service for specific zone optimization
-    // For now, we'll just regenerate all recommendations
     generateRecommendations();
   };
 
-  // Group items by zone
   const itemsByZone = storageZones.map(zone => ({
     ...zone,
     items: inventoryItems.filter(item => item.zoneId === zone.id)
@@ -329,7 +340,10 @@ const StorageMap = () => {
           <div className="flex gap-2">
             <Button 
               variant="outline" 
-              onClick={generateRecommendations}
+              onClick={() => {
+                calculateZoneUtilization();
+                generateRecommendations();
+              }}
               className="gap-2"
               disabled={isGeneratingRecommendations}
             >
