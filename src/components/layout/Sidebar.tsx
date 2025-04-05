@@ -16,12 +16,8 @@ import {
   Satellite,
   Navigation,
   Clock,
-  ZoomIn,
-  Globe,
-  Send,
   AlertTriangle,
   MessageSquare,
-  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -49,16 +45,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
   ];
 
-  // Advanced features (previously Doraemon features, now renamed appropriately)
+  // Advanced features (updated list with removed inactive features)
   const advancedFeatures = [
     { name: 'ISS Guidelines', icon: Satellite, path: '/iss-guidelines' },
     { name: 'Quick Navigation', icon: Navigation, path: '/instant-navigation', status: 'available' },
     { name: 'Expiry Forecasting', icon: Clock, path: '/spoilage-simulation', status: 'dev' },
     { name: 'Smart Tagging', icon: Tags, path: '/smart-tagging', status: 'dev' },
-    { name: 'Zoomable View', icon: ZoomIn, path: '/zoomable-view', status: 'planned' },
-    { name: 'Translator', icon: Globe, path: '/translator', status: 'planned' },
-    { name: 'Transfer Assistant', icon: Send, path: '/transfer-assistant', status: 'planned' },
-    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'planned' },
+    { name: 'Event Predictor', icon: AlertTriangle, path: '/event-predictor', status: 'dev' },
+    { name: 'AI Assistant', icon: MessageSquare, path: '/ai-assistant', status: 'dev' },
   ];
 
   return (

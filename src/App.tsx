@@ -28,9 +28,6 @@ import SpoilageSimulation from "./pages/SpoilageSimulation";
 import SmartTagging from "./pages/SmartTagging";
 
 // Future Features Pages
-import ZoomableView from "./pages/ZoomableView";
-import Translator from "./pages/Translator";
-import TransferAssistant from "./pages/TransferAssistant";
 import EventPredictor from "./pages/EventPredictor";
 
 // Auth Provider
@@ -95,10 +92,8 @@ const App = () => {
                     <Route path="/smart-tagging" element={<SmartTagging />} />
                     
                     {/* Future Feature Routes */}
-                    <Route path="/zoomable-view" element={<ZoomableView />} />
-                    <Route path="/translator" element={<Translator />} />
-                    <Route path="/transfer-assistant" element={<TransferAssistant />} />
                     <Route path="/event-predictor" element={<EventPredictor />} />
+                    <Route path="/ai-assistant" element={<Dashboard />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
