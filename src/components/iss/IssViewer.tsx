@@ -241,7 +241,7 @@ export const IssViewer: React.FC = () => {
     container.addEventListener('wheel', handleScroll);
     
     // Add orbit controls
-    setupMouseControl(issGroup, camera, renderer, scene);
+    setupMouseControl(issGroup, camera, renderer);
     
     // Cleanup function for when component unmounts
     return () => {
@@ -282,7 +282,7 @@ export const IssViewer: React.FC = () => {
   }
   
   // Setup mouse rotation controls
-  function setupMouseControl(issGroup: any, camera: any, renderer: any, scene: any) {
+  function setupMouseControl(issGroup: any, camera: any, renderer: any) {
     let isDragging = false;
     let previousMousePosition = {
       x: 0,
@@ -401,19 +401,19 @@ export const IssViewer: React.FC = () => {
   );
 };
 
-// Fixed interface declarations for TypeScript
+// Add a THREE type declaration for TypeScript
 declare global {
   interface Window {
     THREE: any;
   }
   const THREE: any;
   
-  interface CustomEventInit<T = any> {
-    detail?: T;
+  interface CustomEventInit {
+    detail?: any;
   }
   
-  interface CustomEvent<T = any> extends Event {
-    readonly detail: T;
+  interface CustomEvent {
+    detail: any;
   }
 }
 
