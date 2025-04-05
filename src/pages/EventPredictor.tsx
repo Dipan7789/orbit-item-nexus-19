@@ -225,7 +225,7 @@ const EventPredictor = () => {
               </div>
               <div className="bg-card border rounded-md p-3">
                 <div className="text-sm font-medium">Orbital Debris</div>
-                <div className="text-xs text-muted-foreground">Tracking objects > 1cm in proximity</div>
+                <div className="text-xs text-muted-foreground">Tracking objects &gt; 1cm in proximity</div>
               </div>
               <div className="bg-card border rounded-md p-3">
                 <div className="text-sm font-medium">Atmospheric Effects</div>

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -87,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 key={feature.path}
                 to={feature.path}
                 className={({ isActive }) => cn(
-                  'flex items-center py-2 px-3 rounded-md text-sm font-medium',
+                  'flex items-center py-2 px-3 rounded-md text-sm font-medium transition-all duration-200',
                   isActive
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -111,7 +112,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
               const isPlanned = feature.status === 'planned';
               const isInDev = feature.status === 'dev';
               
-              return (
+              // Basic NavLink element that will be used in both collapsed and expanded states
+              const navLinkElement = (
                 <NavLink
                   key={feature.path}
                   to={feature.path}
@@ -141,6 +143,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                   )}
                 </NavLink>
               );
+              
+              // If sidebar is collapsed, wrap in tooltip for better UX
+              if (isCollapsed) {
+                return (
+                  <TooltipProvider key={feature.path}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {navLinkElement}
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <div className="flex flex-col">
+                          <span>{feature.name}</span>
+                          {isInDev && <span className="text-xs text-amber-600">Beta</span>}
+                          {isPlanned && <span className="text-xs">Coming Soon</span>}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              }
+              
+              return navLinkElement;
             })}
           </div>
         </nav>
