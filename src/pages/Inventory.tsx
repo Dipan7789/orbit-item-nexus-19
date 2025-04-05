@@ -309,7 +309,9 @@ const Inventory = () => {
                       {item.lastUsed ? 
                         (typeof item.lastUsed === 'string' ? 
                           new Date(item.lastUsed).toLocaleDateString() : 
-                          item.lastUsed.toLocaleDateString()) 
+                          'object' === typeof item.lastUsed && item.lastUsed instanceof Date ? 
+                            item.lastUsed.toLocaleDateString() : 
+                            '—') 
                         : '—'}
                     </TableCell>
                     <TableCell className="text-right">
