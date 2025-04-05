@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,12 +41,14 @@ const Inventory = () => {
   const [isNewItem, setIsNewItem] = useState(false);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
+  // Extract the highlight parameter from the URL if present
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const highlightId = searchParams.get('highlight');
     
     if (highlightId) {
       setHighlightedItemId(highlightId);
+      // Scroll to the highlighted item after a small delay to ensure rendering
       setTimeout(() => {
         const element = document.getElementById(`inventory-item-${highlightId}`);
         if (element) {
@@ -108,8 +111,10 @@ const Inventory = () => {
   const handleExport = () => {
     setExportInProgress(true);
     
+    // Simulate export process
     setTimeout(() => {
       try {
+        // Create CSV content
         const headers = ["ID", "Name", "Category", "Location", "Quantity", "Priority", "Last Used", "Expiry Date"];
         const csvContent = [
           headers.join(','),
@@ -125,6 +130,7 @@ const Inventory = () => {
           ].join(','))
         ].join('\n');
         
+        // Create and download the file
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -305,7 +311,7 @@ const Inventory = () => {
                         {item.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>{typeof item.lastUsed === 'string' ? new Date(item.lastUsed).toLocaleDateString() : item.lastUsed.toLocaleDateString()}</TableCell>
+                    <TableCell>{typeof item.lastUsed === 'string' ? item.lastUsed : item.lastUsed.toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <InventoryActions 
                         itemId={item.id} 
