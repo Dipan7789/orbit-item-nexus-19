@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -412,8 +411,8 @@ declare global {
     detail?: T;
   }
   
-  interface CustomEvent<T = any> {
-    detail: T;
+  interface CustomEvent<T = any> extends Event {
+    readonly detail: T;
   }
 }
 

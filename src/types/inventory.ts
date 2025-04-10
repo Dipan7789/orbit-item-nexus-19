@@ -22,7 +22,7 @@ export interface InventoryItem {
   mass_kg: number;
   expiryDate?: string | null;
   dateAdded: string;
-  lastUsed: string;
+  lastUsed: string | Date;
   lastModified: string;
   notes?: string;
   usage_limit?: number;
