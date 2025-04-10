@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useUser } from '@/context/UserContext';
-import { CircleUserRound, BrainCircuit } from "lucide-react";
+import { CircleUserRound, BrainCircuit, Send } from "lucide-react";
 
 const AIAssistant = () => {
   const { toast } = useToast();
@@ -112,7 +113,9 @@ const AIAssistant = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }}
               />
-              <Button onClick={sendMessage}>Send</Button>
+              <Button onClick={sendMessage}>
+                <Send className="h-4 w-4 mr-1" /> Send
+              </Button>
             </div>
           </div>
         </CardContent>
